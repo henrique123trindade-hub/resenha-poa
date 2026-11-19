@@ -40,7 +40,7 @@ import { useToast } from '../components/Layout';
 type AdminTab = 'queue' | 'csv' | 'venues' | 'taxonomy' | 'moderation';
 
 export const AdminPage: React.FC = () => {
-  const { user, isAdmin, openAuthModal } = useAuth();
+  const { user, isAdmin, authReady, openAuthModal } = useAuth();
   const { notify } = useToast();
 
   const [tab, setTab] = useState<AdminTab>('queue');
@@ -100,27 +100,30 @@ export const AdminPage: React.FC = () => {
   };
 
   useEffect(() => {
+    if (!authReady) return;
     if (isAdmin) {
       void loadData();
     } else {
       setLoading(false);
     }
-  }, [isAdmin]);
+  }, [authReady, isAdmin]);
 
   if (!user) {
     return (
-      <div className="max-w-[780px] mx-auto px-4 py-20 text-center space-y-5 text-[#F4F4F2]">
-        <Shield className="w-10 h-10 text-[#F4F4F2] mx-auto" />
+      <div className="max-w-[780px] mx-auto px-4 py-20 text-center space-y-5 text-[#F7F7F5]">
+        <div className="w-16 h-16 rounded-2xl bg-[#1C1C20] border border-[#28282E] flex items-center justify-center mx-auto">
+          <Shield className="w-7 h-7 text-[#FF5A36]" />
+        </div>
         <h1 className="font-display text-4xl font-extrabold italic uppercase tracking-tight">
           Painel Administrativo
         </h1>
-        <p className="text-sm text-[#858585]">
+        <p className="text-sm text-[#98989F]">
           Faça login com a conta autorizada para acessar moderação e gestão do catálogo.
         </p>
         <button
           type="button"
           onClick={() => openAuthModal('Entre com a conta administrativa autorizada.')}
-          className="px-6 py-3 rounded-md bg-[#F4F4F2] hover:bg-white text-[#080808] text-xs font-bold uppercase tracking-wider transition-colors"
+          className="px-6 py-3 rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] text-[#101012] text-xs font-extrabold uppercase tracking-wider transition-colors"
         >
           Entrar com Google
         </button>
@@ -130,13 +133,13 @@ export const AdminPage: React.FC = () => {
 
   if (!isAdmin) {
     return (
-      <div className="max-w-[780px] mx-auto px-4 py-20 text-center space-y-4 text-[#F4F4F2]">
+      <div className="max-w-[780px] mx-auto px-4 py-20 text-center space-y-4 text-[#F7F7F5]">
         <Shield className="w-10 h-10 text-red-400 mx-auto" />
         <h1 className="font-display text-4xl font-extrabold italic uppercase tracking-tight">
           Acesso restrito
         </h1>
-        <p className="text-sm text-[#858585]">
-          A conta <strong className="text-[#F4F4F2]">{user.email}</strong> não possui permissão de
+        <p className="text-sm text-[#98989F]">
+          A conta <strong className="text-[#F7F7F5]">{user.email}</strong> não possui permissão de
           administração.
         </p>
       </div>
@@ -262,13 +265,13 @@ export const AdminPage: React.FC = () => {
   };
 
   const fieldClass =
-    'w-full h-10 px-3 bg-[#080808] border border-[#292929] focus:border-[#F4F4F2] rounded-md text-sm text-[#F4F4F2] focus:outline-none';
+    'w-full h-10 px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none';
 
   return (
-    <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-8 text-[#F4F4F2]">
-      <div className="pb-6 border-b border-[#292929] flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+    <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-8 text-[#F7F7F5]">
+      <div className="pb-6 border-b border-[#28282E] flex flex-col lg:flex-row lg:items-end justify-between gap-4">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#858585] mb-2">
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#FF5A36] mb-2">
             Consola de curadoria & moderação
           </p>
           <h1 className="font-display text-4xl sm:text-5xl font-extrabold italic uppercase tracking-tight">
@@ -278,7 +281,7 @@ export const AdminPage: React.FC = () => {
         <button
           type="button"
           onClick={handleArchiveExpired}
-          className="px-5 py-2.5 rounded-md bg-[#F4F4F2] hover:bg-white text-[#080808] text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 self-start lg:self-auto transition-colors"
+          className="px-5 py-2.5 rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] text-[#101012] text-xs font-extrabold uppercase tracking-wider inline-flex items-center gap-2 self-start lg:self-auto transition-colors"
         >
           <Archive className="w-4 h-4" />
           <span>Encerrar eventos passados</span>
@@ -288,21 +291,21 @@ export const AdminPage: React.FC = () => {
       {/* Real Firestore Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
         {[
-          { label: 'Eventos na fila', value: pendingEvents.length },
-          { label: 'Eventos publicados', value: publishedEvents.length },
-          { label: 'Bares no banco', value: venues.length },
-          { label: 'Denúncias abertas', value: openReports.length },
-          { label: 'Avaliações pendentes', value: pendingReviews.length },
-          { label: 'Contas registradas', value: usersCount },
+          { label: 'Eventos na fila', value: pendingEvents.length, accent: 'text-[#FF5A36]' },
+          { label: 'Eventos publicados', value: publishedEvents.length, accent: 'text-[#D5FF52]' },
+          { label: 'Bares no banco', value: venues.length, accent: 'text-[#5265FF]' },
+          { label: 'Denúncias abertas', value: openReports.length, accent: 'text-red-400' },
+          { label: 'Avaliações pendentes', value: pendingReviews.length, accent: 'text-[#F7F7F5]' },
+          { label: 'Contas registradas', value: usersCount, accent: 'text-[#F7F7F5]' },
         ].map((metric) => (
           <div
             key={metric.label}
-            className="bg-[#141414] border border-[#292929] rounded-md p-4"
+            className="bg-[#1C1C20] border border-[#28282E] rounded-2xl p-4"
           >
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[#858585]">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[#98989F]">
               {metric.label}
             </p>
-            <p className="font-display text-3xl font-extrabold mt-1 tabular-nums text-[#F4F4F2]">
+            <p className={`font-display text-3xl font-extrabold mt-1 tabular-nums ${metric.accent}`}>
               {metric.value}
             </p>
           </div>
@@ -310,7 +313,7 @@ export const AdminPage: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-2 border-b border-[#292929] pb-4">
+      <div className="flex flex-wrap gap-2 border-b border-[#28282E] pb-4">
         {(
           [
             { id: 'queue', label: `Eventos (${events.length})` },
@@ -324,10 +327,10 @@ export const AdminPage: React.FC = () => {
             key={t.id}
             type="button"
             onClick={() => setTab(t.id)}
-            className={`px-4 py-2 rounded-md text-xs font-bold uppercase tracking-wider border transition-colors ${
+            className={`px-4 py-2 rounded-xl text-xs font-extrabold uppercase tracking-wider border transition-colors ${
               tab === t.id
-                ? 'bg-[#F4F4F2] border-[#F4F4F2] text-[#080808]'
-                : 'bg-[#141414] border-[#292929] text-[#F4F4F2] hover:border-[#F4F4F2]'
+                ? 'bg-[#FF5A36] border-[#FF5A36] text-[#101012]'
+                : 'bg-[#1C1C20] border-[#28282E] text-[#F7F7F5] hover:border-[#F7F7F5]/60'
             }`}
           >
             {t.label}
@@ -336,38 +339,40 @@ export const AdminPage: React.FC = () => {
       </div>
 
       {loading ? (
-        <p className="text-sm text-[#858585]">Carregando registros do Firestore...</p>
+        <p className="text-sm text-[#98989F]">Carregando registros do Firestore...</p>
       ) : (
         <>
           {/* TAB 1: EVENT QUEUE & MANAGEMENT */}
           {tab === 'queue' && (
             <div className="space-y-4">
               {events.length === 0 ? (
-                <div className="bg-[#141414] border border-[#292929] rounded-md p-8 text-sm text-[#858585]">
+                <div className="bg-[#1C1C20] border border-[#28282E] rounded-2xl p-8 text-sm text-[#98989F]">
                   Nenhum evento gravado no Firestore ainda.
                 </div>
               ) : (
                 events.map((ev) => (
                   <div
                     key={ev.id}
-                    className="bg-[#141414] border border-[#292929] rounded-md p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+                    className="bg-[#1C1C20] border border-[#28282E] rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4"
                   >
                     <div className="space-y-1">
                       <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-wider">
-                        <span className="text-[#F4F4F2]">{ev.status}</span>
-                        <span className="text-[#858585]">·</span>
-                        <span className="tabular-nums text-[#858585]">
+                        <span className={ev.status === 'published' ? 'text-[#D5FF52]' : 'text-[#FF5A36]'}>
+                          {ev.status}
+                        </span>
+                        <span className="text-[#98989F]">·</span>
+                        <span className="tabular-nums text-[#98989F]">
                           {ev.dateISO} {ev.startTime}
                         </span>
-                        <span className="text-[#858585]">·</span>
-                        <span className="text-[#858585]">{ev.neighborhood}</span>
-                        {ev.isVerified && <span className="text-[#F4F4F2]">· Verificado</span>}
-                        {ev.isSponsored && <span className="text-[#858585]">· Patrocinado</span>}
+                        <span className="text-[#98989F]">·</span>
+                        <span className="text-[#98989F]">{ev.neighborhood}</span>
+                        {ev.isVerified && <span className="text-[#D5FF52]">· Verificado</span>}
+                        {ev.isSponsored && <span className="text-[#98989F]">· Patrocinado</span>}
                       </div>
-                      <h3 className="font-display text-2xl font-bold uppercase text-[#F4F4F2]">
+                      <h3 className="font-display text-2xl font-bold uppercase text-[#F7F7F5]">
                         {ev.title}
                       </h3>
-                      <p className="text-xs text-[#858585]">
+                      <p className="text-xs text-[#98989F]">
                         {ev.venueName} · Org: {ev.organizerName} · Fonte: {ev.sourceName}
                       </p>
                     </div>
@@ -386,7 +391,7 @@ export const AdminPage: React.FC = () => {
                               'Evento aprovado e publicado.',
                             )
                           }
-                          className="px-3.5 py-2 rounded-md bg-[#F4F4F2] hover:bg-white text-[#080808] text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1"
+                          className="px-3.5 py-2 rounded-xl bg-[#D5FF52] hover:brightness-105 text-[#101012] text-xs font-extrabold uppercase tracking-wider inline-flex items-center gap-1"
                         >
                           <Check className="w-3.5 h-3.5" /> Publicar
                         </button>
@@ -397,7 +402,7 @@ export const AdminPage: React.FC = () => {
                           onClick={() =>
                             handleEventPatch(ev, { status: 'rejected' }, 'Evento recusado.')
                           }
-                          className="px-3.5 py-2 rounded-md border border-red-400/50 text-red-400 hover:bg-red-950/30 text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1"
+                          className="px-3.5 py-2 rounded-xl border border-red-400/50 text-red-400 hover:bg-red-950/30 text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1"
                         >
                           <X className="w-3.5 h-3.5" /> Recusar
                         </button>
@@ -411,7 +416,7 @@ export const AdminPage: React.FC = () => {
                             ev.isVerified ? 'Selo removido.' : 'Evento marcado como verificado.',
                           )
                         }
-                        className="px-3.5 py-2 rounded-md border border-[#292929] hover:border-[#F4F4F2] text-xs font-bold uppercase tracking-wider text-[#F4F4F2] inline-flex items-center gap-1"
+                        className="px-3.5 py-2 rounded-xl border border-[#28282E] bg-[#101012] hover:border-[#F7F7F5]/60 text-xs font-bold uppercase tracking-wider text-[#F7F7F5] inline-flex items-center gap-1"
                       >
                         <ShieldCheck className="w-3.5 h-3.5" />
                         {ev.isVerified ? 'Remover verificado' : 'Verificar'}
@@ -425,7 +430,7 @@ export const AdminPage: React.FC = () => {
                             ev.isFeatured ? 'Removido dos destaques.' : 'Marcado em destaque.',
                           )
                         }
-                        className="px-3.5 py-2 rounded-md border border-[#292929] hover:border-[#F4F4F2] text-xs font-bold uppercase tracking-wider text-[#F4F4F2] inline-flex items-center gap-1"
+                        className="px-3.5 py-2 rounded-xl border border-[#28282E] bg-[#101012] hover:border-[#F7F7F5]/60 text-xs font-bold uppercase tracking-wider text-[#F7F7F5] inline-flex items-center gap-1"
                       >
                         <Sparkles className="w-3.5 h-3.5" />
                         {ev.isFeatured ? 'Tirar destaque' : 'Destacar'}
@@ -439,7 +444,7 @@ export const AdminPage: React.FC = () => {
                             ev.isSponsored ? 'Tag patrocinado removida.' : 'Marcado patrocinado.',
                           )
                         }
-                        className="px-3.5 py-2 rounded-md border border-[#292929] hover:border-[#F4F4F2] text-xs font-bold uppercase tracking-wider text-[#F4F4F2]"
+                        className="px-3.5 py-2 rounded-xl border border-[#28282E] bg-[#101012] hover:border-[#F7F7F5]/60 text-xs font-bold uppercase tracking-wider text-[#F7F7F5]"
                       >
                         {ev.isSponsored ? 'Remover patrocinado' : 'Patrocinado'}
                       </button>
@@ -451,7 +456,7 @@ export const AdminPage: React.FC = () => {
                           await loadData();
                         }}
                         aria-label={`Excluir ${ev.title}`}
-                        className="px-3 py-2 rounded-md border border-red-400/50 text-red-400 hover:bg-red-950/30 text-xs font-semibold"
+                        className="px-3 py-2 rounded-xl border border-red-400/50 text-red-400 hover:bg-red-950/30 text-xs font-semibold"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -464,20 +469,20 @@ export const AdminPage: React.FC = () => {
 
           {/* TAB 2: CSV IMPORT WITH DUPLICATE DETECTION */}
           {tab === 'csv' && (
-            <div className="bg-[#141414] border border-[#292929] rounded-md p-6 space-y-5">
-              <div className="flex items-center gap-2 text-[#F4F4F2]">
-                <FileSpreadsheet className="w-5 h-5" />
+            <div className="bg-[#1C1C20] border border-[#28282E] rounded-2xl p-6 space-y-5">
+              <div className="flex items-center gap-2 text-[#F7F7F5]">
+                <FileSpreadsheet className="w-5 h-5 text-[#FF5A36]" />
                 <h2 className="font-display text-2xl font-extrabold italic uppercase">
                   Importação em lote via CSV
                 </h2>
               </div>
-              <p className="text-xs text-[#858585]">
+              <p className="text-xs text-[#98989F]">
                 Colunas obrigatórias:{' '}
-                <code className="bg-[#080808] px-1.5 py-0.5 rounded text-[#F4F4F2]">
+                <code className="bg-[#101012] px-1.5 py-0.5 rounded text-[#F7F7F5]">
                   title,category,dateISO,startTime,neighborhood,venueName,address
                 </code>
                 . Opcionais:{' '}
-                <code className="bg-[#080808] px-1.5 py-0.5 rounded text-[#F4F4F2]">
+                <code className="bg-[#101012] px-1.5 py-0.5 rounded text-[#F7F7F5]">
                   priceType,priceMin,ageRating,sourceName,ticketUrl,description
                 </code>
                 .
@@ -487,14 +492,14 @@ export const AdminPage: React.FC = () => {
                 rows={7}
                 value={csvText}
                 onChange={(e) => setCsvText(e.target.value)}
-                className="w-full p-3.5 bg-[#080808] border border-[#292929] focus:border-[#F4F4F2] rounded-md font-mono text-xs text-[#F4F4F2] focus:outline-none"
+                className="w-full p-3.5 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl font-mono text-xs text-[#F7F7F5] focus:outline-none"
               />
 
               <div className="flex flex-wrap gap-3">
                 <button
                   type="button"
                   onClick={handleParseCsv}
-                  className="px-5 py-2.5 rounded-md border border-[#292929] hover:border-[#F4F4F2] bg-[#080808] text-[#F4F4F2] text-xs font-bold uppercase tracking-wider transition-colors"
+                  className="px-5 py-2.5 rounded-xl border border-[#28282E] hover:border-[#F7F7F5]/60 bg-[#101012] text-[#F7F7F5] text-xs font-bold uppercase tracking-wider transition-colors"
                 >
                   Validar CSV
                 </button>
@@ -503,7 +508,7 @@ export const AdminPage: React.FC = () => {
                     type="button"
                     disabled={importingCsv}
                     onClick={handleImportCsvRows}
-                    className="px-5 py-2.5 rounded-md bg-[#F4F4F2] hover:bg-white text-[#080808] text-xs font-bold uppercase tracking-wider transition-colors"
+                    className="px-5 py-2.5 rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] text-[#101012] text-xs font-extrabold uppercase tracking-wider transition-colors"
                   >
                     {importingCsv
                       ? 'Importando...'
@@ -513,12 +518,12 @@ export const AdminPage: React.FC = () => {
               </div>
 
               {csvPreview && (
-                <div className="space-y-3 pt-3 border-t border-[#292929] text-xs">
-                  <p className="text-[#F4F4F2] font-bold">
+                <div className="space-y-3 pt-3 border-t border-[#28282E] text-xs">
+                  <p className="text-[#D5FF52] font-bold">
                     Linhas válidas prontas: {csvPreview.validRows.length}
                   </p>
                   {csvPreview.errors.length > 0 && (
-                    <div className="p-3 rounded-md bg-[#080808] border border-red-400/50 space-y-1 text-red-300">
+                    <div className="p-3 rounded-xl bg-[#101012] border border-red-400/50 space-y-1 text-red-300">
                       {csvPreview.errors.map((err, i) => (
                         <p key={i}>
                           Linha {err.row}: {err.message}
@@ -536,10 +541,10 @@ export const AdminPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               <form
                 onSubmit={handleCreateVenue}
-                className="lg:col-span-5 bg-[#141414] border border-[#292929] rounded-md p-6 space-y-4 h-fit"
+                className="lg:col-span-5 bg-[#1C1C20] border border-[#28282E] rounded-2xl p-6 space-y-4 h-fit"
               >
-                <h2 className="font-display text-2xl font-extrabold italic uppercase flex items-center gap-2 text-[#F4F4F2]">
-                  <Plus className="w-4 h-4" /> Cadastrar bar / espaço
+                <h2 className="font-display text-2xl font-extrabold italic uppercase flex items-center gap-2 text-[#F7F7F5]">
+                  <Plus className="w-4 h-4 text-[#FF5A36]" /> Cadastrar bar / espaço
                 </h2>
                 <input
                   type="text"
@@ -606,7 +611,7 @@ export const AdminPage: React.FC = () => {
                   placeholder="Resumo de horários (opcional)"
                   className={fieldClass}
                 />
-                <label className="flex items-center gap-2 text-xs text-[#858585]">
+                <label className="flex items-center gap-2 text-xs text-[#98989F]">
                   <input
                     type="checkbox"
                     checked={vHoursVerified}
@@ -619,11 +624,11 @@ export const AdminPage: React.FC = () => {
                   value={vDesc}
                   onChange={(e) => setVDesc(e.target.value)}
                   placeholder="Descrição editorial *"
-                  className="w-full p-3 bg-[#080808] border border-[#292929] focus:border-[#F4F4F2] rounded-md text-sm text-[#F4F4F2] focus:outline-none"
+                  className="w-full p-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-sm text-[#F7F7F5] focus:outline-none"
                 />
                 <button
                   type="submit"
-                  className="w-full py-3 rounded-md bg-[#F4F4F2] hover:bg-white text-[#080808] text-xs font-bold uppercase tracking-wider transition-colors"
+                  className="w-full py-3 rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] text-[#101012] text-xs font-extrabold uppercase tracking-wider transition-colors"
                 >
                   Publicar estabelecimento
                 </button>
@@ -633,13 +638,13 @@ export const AdminPage: React.FC = () => {
                 {venues.map((v) => (
                   <div
                     key={v.id}
-                    className="bg-[#141414] border border-[#292929] rounded-md p-4"
+                    className="bg-[#1C1C20] border border-[#28282E] rounded-2xl p-4"
                   >
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-[#858585]">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-[#98989F]">
                       {v.neighborhood} · {v.category} · {v.priceRange}
                     </p>
-                    <p className="font-display text-xl font-bold uppercase text-[#F4F4F2]">{v.name}</p>
-                    <p className="text-xs text-[#858585]">{v.address}</p>
+                    <p className="font-display text-xl font-bold uppercase text-[#F7F7F5]">{v.name}</p>
+                    <p className="text-xs text-[#98989F]">{v.address}</p>
                   </div>
                 ))}
               </div>
@@ -649,8 +654,8 @@ export const AdminPage: React.FC = () => {
           {/* TAB 4: TAXONOMY (CATEGORIES & NEIGHBORHOODS) */}
           {tab === 'taxonomy' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-[#141414] border border-[#292929] rounded-md p-6 space-y-4">
-                <h2 className="font-display text-2xl font-extrabold italic uppercase text-[#F4F4F2]">
+              <div className="bg-[#1C1C20] border border-[#28282E] rounded-2xl p-6 space-y-4">
+                <h2 className="font-display text-2xl font-extrabold italic uppercase text-[#F7F7F5]">
                   Gerenciar categorias
                 </h2>
                 <div className="space-y-2.5">
@@ -683,23 +688,23 @@ export const AdminPage: React.FC = () => {
                       notify('Categoria salva no Firestore.');
                       await loadData();
                     }}
-                    className="px-5 py-2.5 rounded-md bg-[#F4F4F2] hover:bg-white text-[#080808] text-xs font-bold uppercase tracking-wider transition-colors"
+                    className="px-5 py-2.5 rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] text-[#101012] text-xs font-extrabold uppercase tracking-wider transition-colors"
                   >
                     Salvar categoria
                   </button>
                 </div>
-                <div className="pt-3 border-t border-[#292929] space-y-2 text-xs">
+                <div className="pt-3 border-t border-[#28282E] space-y-2 text-xs">
                   {categories.map((c) => (
-                    <div key={c.id} className="flex items-center justify-between text-[#F4F4F2]">
+                    <div key={c.id} className="flex items-center justify-between text-[#F7F7F5]">
                       <span className="font-medium">{c.label}</span>
-                      <span className="text-[#858585]">{c.active ? 'Ativa' : 'Oculta'}</span>
+                      <span className="text-[#98989F]">{c.active ? 'Ativa' : 'Oculta'}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="bg-[#141414] border border-[#292929] rounded-md p-6 space-y-4">
-                <h2 className="font-display text-2xl font-extrabold italic uppercase text-[#F4F4F2]">
+              <div className="bg-[#1C1C20] border border-[#28282E] rounded-2xl p-6 space-y-4">
+                <h2 className="font-display text-2xl font-extrabold italic uppercase text-[#F7F7F5]">
                   Gerenciar bairros
                 </h2>
                 <div className="space-y-2.5">
@@ -722,7 +727,7 @@ export const AdminPage: React.FC = () => {
                     value={neiSummary}
                     onChange={(e) => setNeiSummary(e.target.value)}
                     placeholder="Resumo editorial"
-                    className="w-full p-3 bg-[#080808] border border-[#292929] focus:border-[#F4F4F2] rounded-md text-sm text-[#F4F4F2] focus:outline-none"
+                    className="w-full p-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-sm text-[#F7F7F5] focus:outline-none"
                   />
                   <button
                     type="button"
@@ -741,16 +746,16 @@ export const AdminPage: React.FC = () => {
                       notify('Bairro salvo no Firestore.');
                       await loadData();
                     }}
-                    className="px-5 py-2.5 rounded-md bg-[#F4F4F2] hover:bg-white text-[#080808] text-xs font-bold uppercase tracking-wider transition-colors"
+                    className="px-5 py-2.5 rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] text-[#101012] text-xs font-extrabold uppercase tracking-wider transition-colors"
                   >
                     Salvar bairro
                   </button>
                 </div>
-                <div className="pt-3 border-t border-[#292929] space-y-2 text-xs">
+                <div className="pt-3 border-t border-[#28282E] space-y-2 text-xs">
                   {neighborhoods.map((n) => (
-                    <div key={n.id} className="flex items-center justify-between text-[#F4F4F2]">
+                    <div key={n.id} className="flex items-center justify-between text-[#F7F7F5]">
                       <span className="font-medium">{n.name}</span>
-                      <span className="text-[#858585]">{n.active ? 'Ativo' : 'Oculto'}</span>
+                      <span className="text-[#98989F]">{n.active ? 'Ativo' : 'Oculto'}</span>
                     </div>
                   ))}
                 </div>
@@ -762,19 +767,19 @@ export const AdminPage: React.FC = () => {
           {tab === 'moderation' && (
             <div className="space-y-8">
               <div className="space-y-3">
-                <h2 className="font-display text-2xl font-extrabold italic uppercase flex items-center gap-2 text-[#F4F4F2]">
+                <h2 className="font-display text-2xl font-extrabold italic uppercase flex items-center gap-2 text-[#F7F7F5]">
                   <Flag className="w-5 h-5 text-red-400" /> Denúncias e avisos ({reports.length})
                 </h2>
                 {reports.map((r) => (
                   <div
                     key={r.id}
-                    className="bg-[#141414] border border-[#292929] rounded-md p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                    className="bg-[#1C1C20] border border-[#28282E] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                   >
                     <div>
-                      <p className="text-[11px] font-bold uppercase tracking-wider text-[#858585]">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-[#98989F]">
                         {r.targetType} · {r.targetId} · Status: {r.status}
                       </p>
-                      <p className="text-sm text-[#F4F4F2] mt-1">{r.reason}</p>
+                      <p className="text-sm text-[#F7F7F5] mt-1">{r.reason}</p>
                     </div>
                     {r.status === 'open' && (
                       <div className="flex gap-2">
@@ -785,7 +790,7 @@ export const AdminPage: React.FC = () => {
                             notify('Denúncia marcada como resolvida.');
                             await loadData();
                           }}
-                          className="px-3.5 py-1.5 rounded-md bg-[#F4F4F2] text-[#080808] text-xs font-bold uppercase tracking-wider"
+                          className="px-3.5 py-1.5 rounded-xl bg-[#D5FF52] text-[#101012] text-xs font-extrabold uppercase tracking-wider"
                         >
                           Resolver
                         </button>
@@ -796,7 +801,7 @@ export const AdminPage: React.FC = () => {
                             notify('Denúncia arquivada.');
                             await loadData();
                           }}
-                          className="px-3.5 py-1.5 rounded-md border border-[#292929] text-[#F4F4F2] text-xs font-bold uppercase tracking-wider"
+                          className="px-3.5 py-1.5 rounded-xl border border-[#28282E] bg-[#101012] text-[#F7F7F5] text-xs font-bold uppercase tracking-wider"
                         >
                           Arquivar
                         </button>
@@ -807,19 +812,19 @@ export const AdminPage: React.FC = () => {
               </div>
 
               <div className="space-y-3">
-                <h2 className="font-display text-2xl font-extrabold italic uppercase text-[#F4F4F2]">
+                <h2 className="font-display text-2xl font-extrabold italic uppercase text-[#F7F7F5]">
                   Avaliações de bares ({reviews.length})
                 </h2>
                 {reviews.map((rev) => (
                   <div
                     key={rev.id}
-                    className="bg-[#141414] border border-[#292929] rounded-md p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                    className="bg-[#1C1C20] border border-[#28282E] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                   >
                     <div>
-                      <p className="text-xs font-bold text-[#F4F4F2]">
+                      <p className="text-xs font-bold text-[#F7F7F5]">
                         {rev.authorName} · Nota {rev.rating}/5 · Status: {rev.status}
                       </p>
-                      <p className="text-sm text-[#858585] mt-1">{rev.comment}</p>
+                      <p className="text-sm text-[#98989F] mt-1">{rev.comment}</p>
                     </div>
                     <div className="flex gap-2">
                       <button
@@ -829,7 +834,7 @@ export const AdminPage: React.FC = () => {
                           notify('Avaliação aprovada.');
                           await loadData();
                         }}
-                        className="px-3.5 py-1.5 rounded-md bg-[#F4F4F2] text-[#080808] text-xs font-bold uppercase tracking-wider"
+                        className="px-3.5 py-1.5 rounded-xl bg-[#D5FF52] text-[#101012] text-xs font-extrabold uppercase tracking-wider"
                       >
                         Aprovar
                       </button>
@@ -840,7 +845,7 @@ export const AdminPage: React.FC = () => {
                           notify('Avaliação rejeitada.');
                           await loadData();
                         }}
-                        className="px-3.5 py-1.5 rounded-md border border-red-400/50 text-red-400 text-xs font-bold uppercase tracking-wider"
+                        className="px-3.5 py-1.5 rounded-xl border border-red-400/50 text-red-400 text-xs font-bold uppercase tracking-wider"
                       >
                         Rejeitar
                       </button>
@@ -850,19 +855,19 @@ export const AdminPage: React.FC = () => {
               </div>
 
               <div className="space-y-3">
-                <h2 className="font-display text-2xl font-extrabold italic uppercase text-[#F4F4F2]">
+                <h2 className="font-display text-2xl font-extrabold italic uppercase text-[#F7F7F5]">
                   Organizadores cadastrados ({organizers.length})
                 </h2>
                 {organizers.map((org) => (
                   <div
                     key={org.ownerId}
-                    className="bg-[#141414] border border-[#292929] rounded-md p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                    className="bg-[#1C1C20] border border-[#28282E] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                   >
                     <div>
-                      <p className="font-display font-bold uppercase text-lg text-[#F4F4F2]">
+                      <p className="font-display font-bold uppercase text-lg text-[#F7F7F5]">
                         {org.orgName}
                       </p>
-                      <p className="text-xs text-[#858585]">
+                      <p className="text-xs text-[#98989F]">
                         {org.contactEmail} {org.instagram ? `· ${org.instagram}` : ''} · Status:{' '}
                         {org.verificationStatus}
                       </p>
@@ -875,7 +880,7 @@ export const AdminPage: React.FC = () => {
                           notify('Organizador verificado.');
                           await loadData();
                         }}
-                        className="px-3.5 py-1.5 rounded-md bg-[#F4F4F2] text-[#080808] text-xs font-bold uppercase tracking-wider"
+                        className="px-3.5 py-1.5 rounded-xl bg-[#D5FF52] text-[#101012] text-xs font-extrabold uppercase tracking-wider"
                       >
                         Verificar
                       </button>
@@ -886,7 +891,7 @@ export const AdminPage: React.FC = () => {
                           notify('Organizador recusado.');
                           await loadData();
                         }}
-                        className="px-3.5 py-1.5 rounded-md border border-red-400/50 text-red-400 text-xs font-bold uppercase tracking-wider"
+                        className="px-3.5 py-1.5 rounded-xl border border-red-400/50 text-red-400 text-xs font-bold uppercase tracking-wider"
                       >
                         Recusar
                       </button>

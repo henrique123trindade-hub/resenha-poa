@@ -14,6 +14,7 @@ import {
 } from '../services/firestoreService';
 import type { PollListItem, PollOption, PollVoteItem } from '../types/resenha';
 import { formatEventDatePtBr } from '../utils/datePoa';
+import { SectionKicker } from '../components/BrandMark';
 import { useToast } from '../components/Layout';
 
 const GUEST_VOTER_KEY = 'resenhapoa_guest_voter_id';
@@ -229,7 +230,7 @@ export const BoraJuntoPage: React.FC = () => {
   if (listId) {
     if (loadingPoll) {
       return (
-        <div className="max-w-[960px] mx-auto px-4 py-20 text-center text-sm text-[#858585]">
+        <div className="max-w-[960px] mx-auto px-4 py-20 text-center text-sm text-[#98989F]">
           Carregando enquete Bora Junto...
         </div>
       );
@@ -237,16 +238,16 @@ export const BoraJuntoPage: React.FC = () => {
 
     if (!poll) {
       return (
-        <div className="max-w-[960px] mx-auto px-4 py-20 text-center space-y-4 text-[#F4F4F2]">
+        <div className="max-w-[960px] mx-auto px-4 py-20 text-center space-y-4 text-[#F7F7F5]">
           <h1 className="font-display text-4xl font-extrabold italic uppercase tracking-tight">
             Lista não encontrada
           </h1>
-          <p className="text-sm text-[#858585]">
+          <p className="text-sm text-[#98989F]">
             Este link pode estar incorreto ou a lista foi removida.
           </p>
           <Link
             to="/bora-junto"
-            className="inline-block px-5 py-3 rounded-md bg-[#F4F4F2] hover:bg-white text-[#080808] text-xs font-bold uppercase tracking-wider transition-colors"
+            className="inline-block px-5 py-3 rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] text-[#101012] text-xs font-extrabold uppercase tracking-wider transition-colors"
           >
             Criar nova lista Bora Junto
           </Link>
@@ -257,17 +258,17 @@ export const BoraJuntoPage: React.FC = () => {
     const totalVotes = votes.length;
 
     return (
-      <div className="max-w-[960px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-8 text-[#F4F4F2]">
-        <div className="bg-[#141414] border border-[#292929] rounded-md p-6 sm:p-8 space-y-4">
+      <div className="max-w-[960px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-8 text-[#F7F7F5]">
+        <div className="bg-[#1C1C20] border border-[#28282E] rounded-2xl p-6 sm:p-8 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#858585] inline-flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5 text-[#F4F4F2]" /> Bora Junto · Criado por {poll.creatorName}
+            <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#98989F] inline-flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5 text-[#FF5A36]" /> Bora Junto · Criado por {poll.creatorName}
             </span>
             <span
-              className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-[2px] border ${
+              className={`text-[11px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full ${
                 poll.isOpen
-                  ? 'border-[#F4F4F2] bg-[#F4F4F2] text-[#080808]'
-                  : 'border-[#292929] bg-[#080808] text-[#858585]'
+                  ? 'bg-[#D5FF52] text-[#101012]'
+                  : 'border border-[#28282E] bg-[#101012] text-[#98989F]'
               }`}
             >
               {poll.isOpen ? 'Votação aberta' : 'Votação encerrada'}
@@ -277,13 +278,13 @@ export const BoraJuntoPage: React.FC = () => {
           <h1 className="font-display text-3xl sm:text-5xl font-extrabold italic uppercase tracking-tight">
             {poll.title}
           </h1>
-          {poll.description && <p className="text-sm sm:text-base text-[#858585]">{poll.description}</p>}
+          {poll.description && <p className="text-sm sm:text-base text-[#98989F]">{poll.description}</p>}
 
           <div className="pt-2 flex flex-wrap gap-3">
             <button
               type="button"
               onClick={copyShareUrl}
-              className="px-5 py-2.5 rounded-md bg-[#F4F4F2] hover:bg-white text-[#080808] text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 transition-colors"
+              className="px-5 py-2.5 rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] text-[#101012] text-xs font-extrabold uppercase tracking-wider inline-flex items-center gap-2 transition-colors"
             >
               <Copy className="w-3.5 h-3.5" /> Copiar link para o grupo
             </button>
@@ -293,7 +294,7 @@ export const BoraJuntoPage: React.FC = () => {
               )}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-5 py-2.5 rounded-md border border-[#292929] hover:border-[#F4F4F2] text-[#F4F4F2] text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 transition-colors"
+              className="px-5 py-2.5 rounded-xl border border-[#28282E] bg-[#101012] hover:border-[#F7F7F5]/60 text-[#F7F7F5] text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 transition-colors"
             >
               <Share2 className="w-3.5 h-3.5" /> Enviar no WhatsApp
             </a>
@@ -301,7 +302,7 @@ export const BoraJuntoPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleTogglePollOpen}
-                className="px-5 py-2.5 rounded-md border border-[#292929] hover:border-[#F4F4F2] text-[#F4F4F2] text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 transition-colors"
+                className="px-5 py-2.5 rounded-xl border border-[#28282E] bg-[#101012] hover:border-[#F7F7F5]/60 text-[#F7F7F5] text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 transition-colors"
               >
                 {poll.isOpen ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
                 <span>{poll.isOpen ? 'Encerrar votação' : 'Reabrir votação'}</span>
@@ -311,10 +312,10 @@ export const BoraJuntoPage: React.FC = () => {
         </div>
 
         {!user && poll.isOpen && (
-          <div className="bg-[#141414] border border-[#292929] rounded-md p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="bg-[#1C1C20] border border-[#28282E] rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3">
             <label
               htmlFor="guest-voter-name"
-              className="text-xs font-bold uppercase tracking-wider text-[#858585] shrink-0"
+              className="text-xs font-bold uppercase tracking-wider text-[#98989F] shrink-0"
             >
               Seu nome no voto (sem login):
             </label>
@@ -324,14 +325,14 @@ export const BoraJuntoPage: React.FC = () => {
               value={voterName}
               onChange={(e) => setVoterName(e.target.value)}
               placeholder="Ex: Marina"
-              className="flex-1 h-10 px-4 bg-[#080808] border border-[#292929] focus:border-[#F4F4F2] rounded-md text-sm text-[#F4F4F2] focus:outline-none"
+              className="flex-1 h-10 px-4 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none"
             />
           </div>
         )}
 
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#858585]">
-            <span className="font-medium tabular-nums">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#98989F]">
+            <span className="font-medium tabular-nums text-[#F7F7F5]">
               {totalVotes} {totalVotes === 1 ? 'voto registrado' : 'votos registrados'}
             </span>
             <span>Cada participante conta 1 voto (pode trocar enquanto aberta)</span>
@@ -345,32 +346,32 @@ export const BoraJuntoPage: React.FC = () => {
             return (
               <div
                 key={opt.id}
-                className={`bg-[#141414] border rounded-md p-5 sm:p-6 space-y-3 transition-colors ${
-                  isMine ? 'border-[#F4F4F2]' : 'border-[#292929]'
+                className={`bg-[#1C1C20] border rounded-2xl p-5 sm:p-6 space-y-3 transition-colors ${
+                  isMine ? 'border-[#FF5A36]' : 'border-[#28282E]'
                 }`}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-[#858585]">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-[#98989F]">
                       {opt.targetType === 'event' ? 'Evento' : 'Bar'} · {opt.neighborhood}
                     </p>
                     <Link
                       to={opt.targetType === 'event' ? `/eventos/${opt.slug}` : `/bares/${opt.slug}`}
-                      className="font-display text-2xl font-extrabold italic uppercase text-[#F4F4F2] hover:underline"
+                      className="font-display text-2xl font-extrabold italic uppercase text-[#F7F7F5] hover:text-[#FF5A36] transition-colors"
                     >
                       {opt.title}
                     </Link>
-                    <p className="text-xs text-[#858585] mt-0.5">{opt.subtitle}</p>
+                    <p className="text-xs text-[#98989F] mt-0.5">{opt.subtitle}</p>
                   </div>
 
                   <button
                     type="button"
                     disabled={!poll.isOpen || votingBusy}
                     onClick={() => handleCastVote(opt.id)}
-                    className={`px-5 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 shrink-0 transition-colors ${
+                    className={`px-5 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider inline-flex items-center gap-2 shrink-0 transition-colors ${
                       isMine
-                        ? 'bg-[#F4F4F2] text-[#080808]'
-                        : 'bg-[#080808] border border-[#292929] hover:border-[#F4F4F2] text-[#F4F4F2]'
+                        ? 'bg-[#FF5A36] text-[#101012]'
+                        : 'bg-[#101012] border border-[#28282E] hover:border-[#F7F7F5]/60 text-[#F7F7F5]'
                     }`}
                   >
                     {isMine ? <Check className="w-4 h-4" /> : <Vote className="w-4 h-4" />}
@@ -380,14 +381,16 @@ export const BoraJuntoPage: React.FC = () => {
 
                 {/* Result bar */}
                 <div className="space-y-1.5">
-                  <div className="h-2 rounded-sm bg-[#292929] overflow-hidden">
+                  <div className="h-2.5 rounded-full bg-[#101012] overflow-hidden border border-[#28282E]">
                     <div
-                      className="h-full bg-[#F4F4F2] transition-all duration-300"
+                      className={`h-full transition-all duration-300 rounded-full ${
+                        isMine ? 'bg-[#FF5A36]' : 'bg-[#D5FF52]'
+                      }`}
                       style={{ width: `${pct}%` }}
                     />
                   </div>
-                  <div className="flex flex-wrap items-center justify-between text-xs text-[#858585]">
-                    <span className="tabular-nums font-medium text-[#F4F4F2]">
+                  <div className="flex flex-wrap items-center justify-between text-xs text-[#98989F]">
+                    <span className="tabular-nums font-semibold text-[#F7F7F5]">
                       {optVotes.length} {optVotes.length === 1 ? 'voto' : 'votos'} ({pct}%)
                     </span>
                     {optVotes.length > 0 && (
@@ -405,15 +408,13 @@ export const BoraJuntoPage: React.FC = () => {
 
   // --- Create New Bora Junto Poll View ---
   return (
-    <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-10 text-[#F4F4F2]">
-      <div className="pb-6 border-b border-[#292929]">
-        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#858585] mb-2">
-          Decisão em grupo · Sem burocracia
-        </p>
+    <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-10 text-[#F7F7F5]">
+      <div className="pb-6 border-b border-[#28282E]">
+        <SectionKicker label="Decisão em grupo · Sem burocracia" className="mb-2" />
         <h1 className="font-display text-4xl sm:text-5xl font-extrabold italic uppercase tracking-tight">
           Bora Junto
         </h1>
-        <p className="text-sm sm:text-base text-[#858585] mt-2 max-w-2xl">
+        <p className="text-sm sm:text-base text-[#98989F] mt-2 max-w-2xl">
           Monte uma lista com opções de rolês e bares de Porto Alegre e mande o link para o grupo.
           Seus amigos votam direto pelo link, sem precisar criar conta.
         </p>
@@ -422,16 +423,16 @@ export const BoraJuntoPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <form
           onSubmit={handleCreatePoll}
-          className="lg:col-span-5 bg-[#141414] border border-[#292929] rounded-md p-6 space-y-5 h-fit"
+          className="lg:col-span-5 bg-[#1C1C20] border border-[#28282E] rounded-2xl p-6 space-y-5 h-fit"
         >
-          <h2 className="font-display text-2xl font-extrabold italic uppercase text-[#F4F4F2]">
+          <h2 className="font-display text-2xl font-extrabold italic uppercase text-[#F7F7F5]">
             Nova lista de votação
           </h2>
 
           <div>
             <label
               htmlFor="poll-title"
-              className="block text-[11px] font-bold uppercase tracking-wider text-[#858585] mb-1.5"
+              className="block text-[11px] font-bold uppercase tracking-wider text-[#98989F] mb-1.5"
             >
               Título do rolê
             </label>
@@ -441,14 +442,14 @@ export const BoraJuntoPage: React.FC = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ex: Sexta da galera na Cidade Baixa"
-              className="w-full h-11 px-3.5 bg-[#080808] border border-[#292929] focus:border-[#F4F4F2] rounded-md text-sm text-[#F4F4F2] focus:outline-none"
+              className="w-full h-11 px-3.5 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none"
             />
           </div>
 
           <div>
             <label
               htmlFor="poll-desc"
-              className="block text-[11px] font-bold uppercase tracking-wider text-[#858585] mb-1.5"
+              className="block text-[11px] font-bold uppercase tracking-wider text-[#98989F] mb-1.5"
             >
               Recado pro grupo (opcional)
             </label>
@@ -458,16 +459,16 @@ export const BoraJuntoPage: React.FC = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Ex: Votação fecha sexta às 18h"
-              className="w-full h-11 px-3.5 bg-[#080808] border border-[#292929] focus:border-[#F4F4F2] rounded-md text-sm text-[#F4F4F2] focus:outline-none"
+              className="w-full h-11 px-3.5 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none"
             />
           </div>
 
-          <div className="pt-3 border-t border-[#292929]">
-            <p className="text-xs font-bold uppercase tracking-wider text-[#F4F4F2] mb-2">
+          <div className="pt-3 border-t border-[#28282E]">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#F7F7F5] mb-2">
               Opções selecionadas ({selectedOptions.length}/6)
             </p>
             {selectedOptions.length === 0 ? (
-              <p className="text-xs text-[#858585]">
+              <p className="text-xs text-[#98989F]">
                 Selecione ao lado pelo menos 2 eventos ou bares do catálogo.
               </p>
             ) : (
@@ -475,13 +476,13 @@ export const BoraJuntoPage: React.FC = () => {
                 {selectedOptions.map((opt) => (
                   <li
                     key={`${opt.targetType}-${opt.targetId}`}
-                    className="p-2.5 rounded-md bg-[#080808] border border-[#292929] flex items-center justify-between gap-2 text-xs text-[#F4F4F2]"
+                    className="p-2.5 rounded-xl bg-[#101012] border border-[#28282E] flex items-center justify-between gap-2 text-xs text-[#F7F7F5]"
                   >
                     <span className="truncate font-semibold">{opt.title}</span>
                     <button
                       type="button"
                       onClick={() => toggleCatalogOption(opt)}
-                      className="text-[#858585] hover:text-[#F4F4F2] shrink-0 font-medium underline"
+                      className="text-[#98989F] hover:text-[#FF5A36] shrink-0 font-medium underline"
                     >
                       Remover
                     </button>
@@ -494,7 +495,7 @@ export const BoraJuntoPage: React.FC = () => {
           <button
             type="submit"
             disabled={creating}
-            className="w-full py-3.5 rounded-md bg-[#F4F4F2] hover:bg-white disabled:opacity-60 text-[#080808] font-bold uppercase tracking-wider text-xs transition-colors"
+            className="w-full py-3.5 rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] disabled:opacity-60 text-[#101012] font-extrabold uppercase tracking-wider text-xs transition-colors"
           >
             {creating
               ? 'Criando lista...'
@@ -504,15 +505,15 @@ export const BoraJuntoPage: React.FC = () => {
           </button>
 
           {myLists.length > 0 && (
-            <div className="pt-4 border-t border-[#292929] space-y-2">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-[#858585]">
+            <div className="pt-4 border-t border-[#28282E] space-y-2">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-[#98989F]">
                 Suas listas criadas
               </p>
               {myLists.map((l) => (
                 <Link
                   key={l.id}
                   to={`/bora-junto/${l.id}`}
-                  className="block p-3 rounded-md bg-[#080808] border border-[#292929] hover:border-[#F4F4F2] text-xs font-semibold text-[#F4F4F2]"
+                  className="block p-3 rounded-xl bg-[#101012] border border-[#28282E] hover:border-[#FF5A36] text-xs font-semibold text-[#F7F7F5] transition-colors"
                 >
                   {l.title} ({l.options.length} opções) →
                 </Link>
@@ -524,7 +525,7 @@ export const BoraJuntoPage: React.FC = () => {
         {/* Selector Grid */}
         <div className="lg:col-span-7 space-y-6">
           <div>
-            <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-[#858585] mb-3">
+            <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-[#98989F] mb-3">
               Eventos do catálogo
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -550,24 +551,22 @@ export const BoraJuntoPage: React.FC = () => {
                           slug: ev.slug,
                         })
                       }
-                      className={`p-4 rounded-md text-left border transition-colors ${
+                      className={`p-4 rounded-2xl text-left border transition-colors ${
                         isSelected
-                          ? 'bg-[#F4F4F2] border-[#F4F4F2] text-[#080808]'
-                          : 'bg-[#141414] border-[#292929] hover:border-[#F4F4F2] text-[#F4F4F2]'
+                          ? 'bg-[#FF5A36]/15 border-[#FF5A36] text-[#F7F7F5]'
+                          : 'bg-[#1C1C20] border-[#28282E] hover:border-[#F7F7F5]/50 text-[#F7F7F5]'
                       }`}
                     >
                       <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider mb-1">
-                        <span className={isSelected ? 'text-[#525252]' : 'text-[#858585]'}>
-                          {ev.neighborhood}
-                        </span>
-                        <span className={isSelected ? 'text-[#080808]' : 'text-[#F4F4F2]'}>
+                        <span className="text-[#98989F]">{ev.neighborhood}</span>
+                        <span className={isSelected ? 'text-[#FF5A36]' : 'text-[#F7F7F5]'}>
                           {isSelected ? 'Selecionado ✓' : '+ Adicionar'}
                         </span>
                       </div>
                       <p className="font-display font-bold uppercase text-lg line-clamp-1">
                         {ev.title}
                       </p>
-                      <p className={`text-xs mt-1 ${isSelected ? 'text-[#525252]' : 'text-[#858585]'}`}>
+                      <p className="text-xs mt-1 text-[#98989F]">
                         {formatEventDatePtBr(ev.dateISO)} · {ev.startTime}
                       </p>
                     </button>
@@ -577,7 +576,7 @@ export const BoraJuntoPage: React.FC = () => {
           </div>
 
           <div>
-            <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-[#858585] mb-3">
+            <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-[#98989F] mb-3">
               Bares e pontos de encontro
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -600,26 +599,22 @@ export const BoraJuntoPage: React.FC = () => {
                         slug: v.slug,
                       })
                     }
-                    className={`p-4 rounded-md text-left border transition-colors ${
+                    className={`p-4 rounded-2xl text-left border transition-colors ${
                       isSelected
-                        ? 'bg-[#F4F4F2] border-[#F4F4F2] text-[#080808]'
-                        : 'bg-[#141414] border-[#292929] hover:border-[#F4F4F2] text-[#F4F4F2]'
+                        ? 'bg-[#5265FF]/15 border-[#5265FF] text-[#F7F7F5]'
+                        : 'bg-[#1C1C20] border-[#28282E] hover:border-[#F7F7F5]/50 text-[#F7F7F5]'
                     }`}
                   >
                     <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider mb-1">
-                      <span className={isSelected ? 'text-[#525252]' : 'text-[#858585]'}>
-                        {v.neighborhood}
-                      </span>
-                      <span className={isSelected ? 'text-[#080808]' : 'text-[#F4F4F2]'}>
+                      <span className="text-[#98989F]">{v.neighborhood}</span>
+                      <span className={isSelected ? 'text-[#5265FF]' : 'text-[#F7F7F5]'}>
                         {isSelected ? 'Selecionado ✓' : '+ Adicionar'}
                       </span>
                     </div>
                     <p className="font-display font-bold uppercase text-lg line-clamp-1">
                       {v.name}
                     </p>
-                    <p className={`text-xs mt-1 ${isSelected ? 'text-[#525252]' : 'text-[#858585]'}`}>
-                      {v.category}
-                    </p>
+                    <p className="text-xs mt-1 text-[#98989F]">{v.category}</p>
                   </button>
                 );
               })}

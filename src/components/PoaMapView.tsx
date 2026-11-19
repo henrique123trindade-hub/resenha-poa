@@ -34,13 +34,13 @@ interface PoaMapViewProps {
 const OSM_TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 
 function createMonochromePinIcon(type: 'event' | 'venue', isSelected: boolean): L.DivIcon {
-  const fill = type === 'event' ? '#F4F4F2' : '#858585';
-  const innerDot = '#080808';
-  const size = isSelected ? 36 : 28;
-  const height = isSelected ? 44 : 34;
+  const fill = type === 'event' ? '#FF5A36' : '#5265FF';
+  const innerDot = '#101012';
+  const size = isSelected ? 38 : 28;
+  const height = isSelected ? 46 : 34;
 
   const halo = isSelected
-    ? `<circle cx="18" cy="17" r="15" fill="rgba(244,244,242,0.22)" />`
+    ? `<circle cx="18" cy="17" r="15" fill="rgba(247,247,245,0.28)" />`
     : '';
 
   const svg = `
@@ -48,7 +48,7 @@ function createMonochromePinIcon(type: 'event' | 'venue', isSelected: boolean): 
       ${halo}
       <path d="M18 3C10.82 3 5 8.82 5 16C5 25.5 18 41 18 41C18 41 31 25.5 31 16C31 8.82 25.18 3 18 3Z"
         fill="${fill}"
-        stroke="#080808"
+        stroke="${isSelected ? '#F7F7F5' : '#101012'}"
         stroke-width="2.5"
         stroke-linejoin="round"
       />
@@ -229,7 +229,7 @@ export const PoaMapView: React.FC<PoaMapViewProps> = ({
   return (
     <div
       data-testid="poa-interactive-map"
-      className={`relative isolate w-full ${heightClass || 'h-[480px]'} rounded-md overflow-hidden border border-[#292929] bg-[#080808]`}
+      className={`relative isolate w-full ${heightClass || 'h-[480px]'} rounded-2xl overflow-hidden border border-[#28282E] bg-[#101012]`}
     >
       {/* Leaflet mount surface */}
       <div
@@ -238,13 +238,13 @@ export const PoaMapView: React.FC<PoaMapViewProps> = ({
         aria-label="Mapa interativo de Porto Alegre"
       />
 
-      {/* Custom monochrome map controls */}
+      {/* Custom map controls */}
       <div className="absolute top-3 right-3 z-[450] flex flex-col gap-1.5">
         <button
           type="button"
           onClick={handleZoomIn}
           aria-label="Aproximar mapa"
-          className="w-9 h-9 rounded bg-[#080808]/90 hover:bg-[#1E1E1E] border border-[#292929] hover:border-[#F4F4F2] text-[#F4F4F2] flex items-center justify-center transition-colors"
+          className="w-9 h-9 rounded-lg bg-[#101012]/90 hover:bg-[#1C1C20] border border-[#28282E] hover:border-[#FF5A36] text-[#F7F7F5] flex items-center justify-center transition-colors"
         >
           <Plus className="w-4 h-4" />
         </button>
@@ -252,7 +252,7 @@ export const PoaMapView: React.FC<PoaMapViewProps> = ({
           type="button"
           onClick={handleZoomOut}
           aria-label="Afastar mapa"
-          className="w-9 h-9 rounded bg-[#080808]/90 hover:bg-[#1E1E1E] border border-[#292929] hover:border-[#F4F4F2] text-[#F4F4F2] flex items-center justify-center transition-colors"
+          className="w-9 h-9 rounded-lg bg-[#101012]/90 hover:bg-[#1C1C20] border border-[#28282E] hover:border-[#FF5A36] text-[#F7F7F5] flex items-center justify-center transition-colors"
         >
           <Minus className="w-4 h-4" />
         </button>
@@ -261,7 +261,7 @@ export const PoaMapView: React.FC<PoaMapViewProps> = ({
           onClick={handleRecenter}
           aria-label="Enquadrar pontos em Porto Alegre"
           title="Enquadrar pontos em Porto Alegre"
-          className="w-9 h-9 rounded bg-[#080808]/90 hover:bg-[#1E1E1E] border border-[#292929] hover:border-[#F4F4F2] text-[#F4F4F2] flex items-center justify-center transition-colors"
+          className="w-9 h-9 rounded-lg bg-[#101012]/90 hover:bg-[#1C1C20] border border-[#28282E] hover:border-[#FF5A36] text-[#F7F7F5] flex items-center justify-center transition-colors"
         >
           <Compass className="w-4 h-4" />
         </button>
@@ -269,7 +269,7 @@ export const PoaMapView: React.FC<PoaMapViewProps> = ({
 
       {/* Empty-filter notice */}
       {validMarkers.length === 0 && (
-        <div className="absolute top-3 left-3 z-[450] max-w-xs rounded bg-[#141414]/95 border border-[#292929] px-3.5 py-2.5 text-xs text-[#858585]">
+        <div className="absolute top-3 left-3 z-[450] max-w-xs rounded-xl bg-[#1C1C20]/95 border border-[#28282E] px-3.5 py-2.5 text-xs text-[#98989F]">
           Nenhum ponto encontrado com os filtros atuais em Porto Alegre.
         </div>
       )}
@@ -279,35 +279,42 @@ export const PoaMapView: React.FC<PoaMapViewProps> = ({
         <div
           role="region"
           aria-label={`Detalhes de ${activeMarker.title}`}
-          className="absolute left-3 right-3 sm:right-auto sm:w-[320px] bottom-3 z-[450] rounded-md bg-[#141414]/95 border border-[#292929] p-4 shadow-2xl"
+          className="absolute left-3 right-3 sm:right-auto sm:w-[320px] bottom-3 z-[450] rounded-xl bg-[#1C1C20]/95 backdrop-blur-md border border-[#28282E] p-4 shadow-2xl"
         >
           <div className="flex items-start justify-between gap-2 mb-1">
-            <p className="font-label text-[10px] font-bold uppercase tracking-[0.14em] text-[#858585]">
-              {activeMarker.type === 'event' ? 'Evento' : 'Bar'} · {activeMarker.neighborhood}
+            <p className="font-label text-[10px] font-bold uppercase tracking-[0.14em] flex items-center gap-1.5">
+              <span
+                className={
+                  activeMarker.type === 'event' ? 'text-[#FF5A36]' : 'text-[#5265FF]'
+                }
+              >
+                {activeMarker.type === 'event' ? 'Evento' : 'Bar'}
+              </span>
+              <span className="text-[#98989F]">· {activeMarker.neighborhood}</span>
             </p>
             <button
               type="button"
               onClick={() => setActiveId(null)}
               aria-label={`Fechar detalhes de ${activeMarker.title}`}
-              className="text-[#858585] hover:text-[#F4F4F2] transition-colors p-0.5 -mt-0.5 -mr-0.5"
+              className="text-[#98989F] hover:text-[#F7F7F5] transition-colors p-0.5 -mt-0.5 -mr-0.5"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          <p className="font-display font-extrabold uppercase text-xl leading-tight text-[#F4F4F2] mb-1">
+          <p className="font-display font-extrabold uppercase text-xl leading-tight text-[#F7F7F5] mb-1">
             {activeMarker.title}
           </p>
-          <p className="text-xs text-[#A3A3A3] mb-3.5 line-clamp-2">{activeMarker.subtitle}</p>
+          <p className="text-xs text-[#98989F] mb-3.5 line-clamp-2">{activeMarker.subtitle}</p>
 
-          <div className="flex items-center justify-between gap-3 pt-2.5 border-t border-[#292929]">
+          <div className="flex items-center justify-between gap-3 pt-2.5 border-t border-[#28282E]">
             <Link
               to={
                 activeMarker.type === 'event'
                   ? `/eventos/${activeMarker.slug}`
                   : `/bares/${activeMarker.slug}`
               }
-              className="text-xs font-bold uppercase tracking-wider text-[#F4F4F2] hover:underline"
+              className="text-xs font-bold uppercase tracking-wider text-[#FF5A36] hover:underline"
             >
               Abrir página →
             </Link>
@@ -315,7 +322,7 @@ export const PoaMapView: React.FC<PoaMapViewProps> = ({
               href={buildDirectionsUrl(activeMarker.lat, activeMarker.lng, activeMarker.title)}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#858585] hover:text-[#F4F4F2] transition-colors"
+              className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#98989F] hover:text-[#F7F7F5] transition-colors"
             >
               <Navigation className="w-3.5 h-3.5" />
               <span>Como chegar</span>

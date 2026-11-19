@@ -99,25 +99,25 @@ export const AiCuratorPanel: React.FC = () => {
   };
 
   return (
-    <section className="bg-[#141414] text-[#F4F4F2] border border-[#292929] rounded-md p-6 sm:p-8">
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 pb-6 border-b border-[#292929]">
+    <section className="bg-[#1C1C20] text-[#F7F7F5] border border-[#28282E] rounded-2xl p-6 sm:p-8">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 pb-6 border-b border-[#28282E]">
         <div>
-          <p className="font-label text-xs font-bold uppercase tracking-[0.14em] text-[#858585] mb-1.5 inline-flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-[#F4F4F2]" /> Curadoria em Porto Alegre
+          <p className="font-label text-xs font-bold uppercase tracking-[0.14em] text-[#5265FF] mb-1.5 inline-flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5" /> Curadoria em Porto Alegre
           </p>
-          <h2 className="font-display text-3xl sm:text-4xl font-extrabold uppercase tracking-tight">
+          <h2 className="font-display text-3xl sm:text-4xl font-extrabold italic uppercase tracking-tight">
             Descubra programação real e monte seu roteiro
           </h2>
         </div>
 
-        <div className="flex flex-wrap gap-1.5 bg-[#080808] p-1 rounded-md border border-[#292929]">
+        <div className="flex flex-wrap gap-1.5 bg-[#101012] p-1.5 rounded-xl border border-[#28282E]">
           <button
             type="button"
             onClick={() => setMode('search')}
-            className={`px-4 py-2 rounded text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 ${
+            className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 ${
               mode === 'search'
-                ? 'bg-[#F4F4F2] text-[#080808]'
-                : 'text-[#858585] hover:text-[#F4F4F2]'
+                ? 'bg-[#5265FF] text-white'
+                : 'text-[#98989F] hover:text-[#F7F7F5]'
             }`}
           >
             <Globe className="w-3.5 h-3.5" /> Agenda Web
@@ -125,10 +125,10 @@ export const AiCuratorPanel: React.FC = () => {
           <button
             type="button"
             onClick={() => setMode('places')}
-            className={`px-4 py-2 rounded text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 ${
+            className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 ${
               mode === 'places'
-                ? 'bg-[#F4F4F2] text-[#080808]'
-                : 'text-[#858585] hover:text-[#F4F4F2]'
+                ? 'bg-[#5265FF] text-white'
+                : 'text-[#98989F] hover:text-[#F7F7F5]'
             }`}
           >
             <MapPin className="w-3.5 h-3.5" /> Lugares no Mapa
@@ -136,10 +136,10 @@ export const AiCuratorPanel: React.FC = () => {
           <button
             type="button"
             onClick={() => setMode('roteiro')}
-            className={`px-4 py-2 rounded text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 ${
+            className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 ${
               mode === 'roteiro'
-                ? 'bg-[#F4F4F2] text-[#080808]'
-                : 'text-[#858585] hover:text-[#F4F4F2]'
+                ? 'bg-[#FF5A36] text-[#101012]'
+                : 'text-[#98989F] hover:text-[#F7F7F5]'
             }`}
           >
             <Zap className="w-3.5 h-3.5" /> Roteiro da Noite
@@ -151,13 +151,13 @@ export const AiCuratorPanel: React.FC = () => {
         {mode === 'roteiro' && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#858585] mb-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#98989F] mb-1.5">
                 Região preferida
               </label>
               <select
                 value={neighborhood}
                 onChange={(e) => setNeighborhood(e.target.value)}
-                className="w-full h-11 rounded-md bg-[#080808] border border-[#292929] px-3 text-sm text-[#F4F4F2] focus:border-[#F4F4F2] focus:outline-none"
+                className="w-full h-11 rounded-xl bg-[#101012] border border-[#28282E] px-3 text-sm text-[#F7F7F5] focus:border-[#FF5A36] focus:outline-none"
               >
                 <option value="Cidade Baixa">Cidade Baixa</option>
                 <option value="Moinhos de Vento">Moinhos de Vento</option>
@@ -168,13 +168,13 @@ export const AiCuratorPanel: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#858585] mb-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#98989F] mb-1.5">
                 Orçamento
               </label>
               <select
                 value={budget}
                 onChange={(e) => setBudget(e.target.value)}
-                className="w-full h-11 rounded-md bg-[#080808] border border-[#292929] px-3 text-sm text-[#F4F4F2] focus:border-[#F4F4F2] focus:outline-none"
+                className="w-full h-11 rounded-xl bg-[#101012] border border-[#28282E] px-3 text-sm text-[#F7F7F5] focus:border-[#FF5A36] focus:outline-none"
               >
                 <option value="Gratuito / Rolê 0800">Gratuito / Rolê 0800</option>
                 <option value="Até R$ 50">Até R$ 50</option>
@@ -183,13 +183,13 @@ export const AiCuratorPanel: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#858585] mb-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#98989F] mb-1.5">
                 Faixa etária
               </label>
               <select
                 value={ageGroup}
                 onChange={(e) => setAgeGroup(e.target.value as '18+' | 'menor')}
-                className="w-full h-11 rounded-md bg-[#080808] border border-[#292929] px-3 text-sm text-[#F4F4F2] focus:border-[#F4F4F2] focus:outline-none"
+                className="w-full h-11 rounded-xl bg-[#101012] border border-[#28282E] px-3 text-sm text-[#F7F7F5] focus:border-[#FF5A36] focus:outline-none"
               >
                 <option value="18+">Adultos (18+)</option>
                 <option value="menor">Inclui menores de 18 anos (Livre / 16+)</option>
@@ -211,12 +211,12 @@ export const AiCuratorPanel: React.FC = () => {
                   : 'Ex: sexta à noite com amigos, primeiro bar tranquilo depois pista eletrônica'
             }
             aria-label="Consulta de curadoria em Porto Alegre"
-            className="flex-1 h-12 rounded-md bg-[#080808] border border-[#292929] focus:border-[#F4F4F2] px-4 text-sm text-[#F4F4F2] placeholder:text-[#858585] focus:outline-none"
+            className="flex-1 h-12 rounded-xl bg-[#101012] border border-[#28282E] focus:border-[#5265FF] px-4 text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none"
           />
           <button
             type="submit"
             disabled={loading}
-            className="h-12 rounded-md bg-[#F4F4F2] hover:bg-white disabled:opacity-60 text-[#080808] font-bold text-xs uppercase tracking-wider px-6 inline-flex items-center justify-center gap-2 whitespace-nowrap shrink-0 transition-colors"
+            className="h-12 rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] disabled:opacity-60 text-[#101012] font-extrabold text-xs uppercase tracking-wider px-6 inline-flex items-center justify-center gap-2 whitespace-nowrap shrink-0 transition-colors"
           >
             <Send className="w-4 h-4" />
             <span>{loading ? 'Consultando...' : 'Consultar'}</span>
@@ -225,19 +225,19 @@ export const AiCuratorPanel: React.FC = () => {
       </form>
 
       {error && (
-        <div className="mt-5 p-4 rounded-md border border-[#F4F4F2]/40 bg-[#080808] text-sm text-[#F4F4F2]">
+        <div className="mt-5 p-4 rounded-xl border border-red-400/50 bg-[#101012] text-sm text-[#F7F7F5]">
           {error}
         </div>
       )}
 
       {mode === 'search' && searchResult && (
-        <div className="mt-6 pt-6 border-t border-[#292929] space-y-4">
-          <div className="text-sm text-[#F4F4F2] whitespace-pre-line leading-relaxed">
+        <div className="mt-6 pt-6 border-t border-[#28282E] space-y-4">
+          <div className="text-sm text-[#F7F7F5] whitespace-pre-line leading-relaxed">
             {searchResult.text}
           </div>
           {searchResult.sources.length > 0 && (
             <div>
-              <p className="font-label text-xs font-bold uppercase tracking-wider text-[#858585] mb-2">
+              <p className="font-label text-xs font-bold uppercase tracking-wider text-[#98989F] mb-2">
                 Fontes consultadas
               </p>
               <ul className="space-y-1.5">
@@ -247,7 +247,7 @@ export const AiCuratorPanel: React.FC = () => {
                       href={src.uri}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-[#858585] hover:text-[#F4F4F2] inline-flex items-center gap-1.5 underline"
+                      className="text-xs text-[#98989F] hover:text-[#FF5A36] inline-flex items-center gap-1.5 underline"
                     >
                       <span>{src.title}</span>
                       <ExternalLink className="w-3 h-3" />
@@ -261,22 +261,22 @@ export const AiCuratorPanel: React.FC = () => {
       )}
 
       {mode === 'places' && placesResult && (
-        <div className="mt-6 pt-6 border-t border-[#292929] space-y-4">
-          <div className="text-sm text-[#F4F4F2] whitespace-pre-line leading-relaxed">
+        <div className="mt-6 pt-6 border-t border-[#28282E] space-y-4">
+          <div className="text-sm text-[#F7F7F5] whitespace-pre-line leading-relaxed">
             {placesResult.text}
           </div>
           {placesResult.places.length > 0 && (
             <div>
-              <p className="font-label text-xs font-bold uppercase tracking-wider text-[#858585] mb-2">
-                Locais encontrados no Google Maps
+              <p className="font-label text-xs font-bold uppercase tracking-wider text-[#98989F] mb-2">
+                Locais encontrados no mapa
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {placesResult.places.map((p, idx) => (
                   <div
                     key={`${p.title}-${idx}`}
-                    className="p-3.5 rounded bg-[#080808] border border-[#292929] flex items-center justify-between gap-3"
+                    className="p-3.5 rounded-xl bg-[#101012] border border-[#28282E] flex items-center justify-between gap-3"
                   >
-                    <span className="text-xs font-semibold text-[#F4F4F2] truncate">
+                    <span className="text-xs font-semibold text-[#F7F7F5] truncate">
                       {p.title}
                     </span>
                     {p.uri && (
@@ -284,7 +284,7 @@ export const AiCuratorPanel: React.FC = () => {
                         href={p.uri}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs font-bold uppercase tracking-wider text-[#F4F4F2] inline-flex items-center gap-1 shrink-0 hover:underline"
+                        className="text-xs font-bold uppercase tracking-wider text-[#5265FF] inline-flex items-center gap-1 shrink-0 hover:underline"
                       >
                         Maps <ExternalLink className="w-3 h-3" />
                       </a>
@@ -298,11 +298,11 @@ export const AiCuratorPanel: React.FC = () => {
       )}
 
       {mode === 'roteiro' && roteiroResult && (
-        <div className="mt-6 pt-6 border-t border-[#292929]">
-          <p className="font-label text-xs font-bold uppercase tracking-wider text-[#858585] mb-2">
+        <div className="mt-6 pt-6 border-t border-[#28282E]">
+          <p className="font-label text-xs font-bold uppercase tracking-wider text-[#D5FF52] mb-2">
             Roteiro sugerido (respeitando classificação etária)
           </p>
-          <div className="text-sm text-[#F4F4F2] whitespace-pre-line leading-relaxed">
+          <div className="text-sm text-[#F7F7F5] whitespace-pre-line leading-relaxed">
             {roteiroResult}
           </div>
         </div>

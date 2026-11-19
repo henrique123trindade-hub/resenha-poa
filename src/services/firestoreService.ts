@@ -433,32 +433,36 @@ export async function fetchAllAdminData(): Promise<{
   categories: CategoryMeta[];
   neighborhoods: NeighborhoodMeta[];
 }> {
-  try {
-    const [evSnap, venSnap, revSnap, repSnap, orgSnap, usrSnap, catSnap, neiSnap] =
-      await Promise.all([
-        getDocs(collection(db, 'events')),
-        getDocs(collection(db, 'venues')),
-        getDocs(collection(db, 'venueReviews')),
-        getDocs(collection(db, 'reports')),
-        getDocs(collection(db, 'organizerProfiles')),
-        getDocs(collection(db, 'users')),
-        getDocs(collection(db, 'categories')),
-        getDocs(collection(db, 'neighborhoods')),
-      ]);
+  const listCollection = async (colPath: string) => {
+    try {
+      return await getDocs(collection(db, colPath));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, colPath);
+    }
+  };
 
-    return {
-      events: evSnap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<EventItem, 'id'>) })),
-      venues: venSnap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<VenueItem, 'id'>) })),
-      reviews: revSnap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<VenueReviewItem, 'id'>) })),
-      reports: repSnap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<ReportItem, 'id'>) })),
-      organizers: orgSnap.docs.map((d) => d.data() as OrganizerProfile),
-      usersCount: usrSnap.size,
-      categories: catSnap.docs.map((d) => d.data() as CategoryMeta),
-      neighborhoods: neiSnap.docs.map((d) => d.data() as NeighborhoodMeta),
-    };
-  } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, 'admin-bundle');
-  }
+  const [evSnap, venSnap, revSnap, repSnap, orgSnap, usrSnap, catSnap, neiSnap] =
+    await Promise.all([
+      listCollection('events'),
+      listCollection('venues'),
+      listCollection('venueReviews'),
+      listCollection('reports'),
+      listCollection('organizerProfiles'),
+      listCollection('users'),
+      listCollection('categories'),
+      listCollection('neighborhoods'),
+    ]);
+
+  return {
+    events: evSnap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<EventItem, 'id'>) })),
+    venues: venSnap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<VenueItem, 'id'>) })),
+    reviews: revSnap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<VenueReviewItem, 'id'>) })),
+    reports: repSnap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<ReportItem, 'id'>) })),
+    organizers: orgSnap.docs.map((d) => d.data() as OrganizerProfile),
+    usersCount: usrSnap.size,
+    categories: catSnap.docs.map((d) => d.data() as CategoryMeta),
+    neighborhoods: neiSnap.docs.map((d) => d.data() as NeighborhoodMeta),
+  };
 }
 
 export async function moderateReviewAsAdmin(

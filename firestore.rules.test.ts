@@ -36,3 +36,9 @@ test('firestore.rules avoids get() or exists() inside allow list blocks', () => 
     assert.equal(line.includes('get('), false, `allow list must not call get(): ${line}`);
   }
 });
+
+test('firestore.rules allows admin and active-filtered list queries on categories and neighborhoods', () => {
+  const matches = rules.match(/allow list: if resource\.data\.active == true \|\| isAdmin\(\);/g) || [];
+  assert.equal(matches.length, 2, 'Both categories and neighborhoods must allow active == true || isAdmin()');
+});
+

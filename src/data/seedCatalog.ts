@@ -1,8 +1,13 @@
 import type { CategoryMeta, EventItem, NeighborhoodMeta, VenueItem } from '../types/resenha';
 import { addDaysISO, getPoaNowParts, getWeekendDatesISO } from '../utils/datePoa';
 
-// Optimized local B&W nightlife & cultural photography assets in /public/assets/nightlife/
+// Optimized local responsive WebP photography assets in /public/assets/nightlife/
 export const CAMPAIGN_PHOTOS = {
+  heroParty: '/assets/nightlife/hero-party-poa-1280.webp',
+  amberCrowd: '/assets/nightlife/event-amber-crowd-1280.webp',
+  cobaltDj: '/assets/nightlife/event-cobalt-dj-1280.webp',
+  crimsonBaile: '/assets/nightlife/event-crimson-baile-1280.webp',
+  warmBar: '/assets/nightlife/venue-warm-bar-1280.webp',
   heroDisco: '/assets/nightlife/hero-disco-1280.webp',
   djPista: '/assets/nightlife/dj-pista-1280.webp',
   pistaGlobo: '/assets/nightlife/pista-globo-1280.webp',
@@ -14,17 +19,17 @@ export const CAMPAIGN_PHOTOS = {
 };
 
 export const CATEGORIES: CategoryMeta[] = [
-  { id: 'funk', label: 'Funk', tagline: 'Bailes, beats e pistas lotadas até amanhecer.', accentHex: '#F4F4F2', active: true },
-  { id: 'eletronica', label: 'Eletrônica', tagline: 'House, techno, garage e sets em galpões.', accentHex: '#F4F4F2', active: true },
-  { id: 'pagode-samba', label: 'Pagode e samba', tagline: 'Rodas de quintal, mesa na calçada e roda de samba.', accentHex: '#F4F4F2', active: true },
-  { id: 'sertanejo', label: 'Sertanejo', tagline: 'Modão, acústico e casas noturnas.', accentHex: '#F4F4F2', active: true },
-  { id: 'rock-indie', label: 'Rock e indie', tagline: 'Bandas locais, porões históricos e guitarras.', accentHex: '#F4F4F2', active: true },
-  { id: 'hip-hop', label: 'Hip-hop', tagline: 'Batalhas de rima, trap e cultura street.', accentHex: '#F4F4F2', active: true },
-  { id: 'pop', label: 'Pop', tagline: 'Pistas temáticas, drags e noites pop.', accentHex: '#F4F4F2', active: true },
-  { id: 'bares', label: 'Bares', tagline: 'Balcões, drinks autorais e cerveja gelada.', accentHex: '#F4F4F2', active: true },
-  { id: 'shows', label: 'Shows', tagline: 'Palcos, turnês nacionais e teatros.', accentHex: '#F4F4F2', active: true },
-  { id: 'cultura', label: 'Cultura', tagline: 'Mostras, cinema de rua, feiras e ocupações.', accentHex: '#F4F4F2', active: true },
-  { id: 'gratuitos', label: 'Gratuitos', tagline: 'Rolês 0800 na rua, na orla e em centros culturais.', accentHex: '#F4F4F2', active: true },
+  { id: 'funk', label: 'Funk', tagline: 'Bailes, beats e pistas lotadas até amanhecer.', accentHex: '#F05AA6', active: true },
+  { id: 'eletronica', label: 'Eletrônica', tagline: 'House, techno, garage e sets em galpões.', accentHex: '#5265FF', active: true },
+  { id: 'pagode-samba', label: 'Pagode e samba', tagline: 'Rodas de quintal, mesa na calçada e roda de samba.', accentHex: '#FF5A36', active: true },
+  { id: 'sertanejo', label: 'Sertanejo', tagline: 'Modão, acústico e casas noturnas.', accentHex: '#FF5A36', active: true },
+  { id: 'rock-indie', label: 'Rock e indie', tagline: 'Bandas locais, porões históricos e guitarras.', accentHex: '#F7F7F5', active: true },
+  { id: 'hip-hop', label: 'Hip-hop', tagline: 'Batalhas de rima, trap e cultura street.', accentHex: '#F7F7F5', active: true },
+  { id: 'pop', label: 'Pop', tagline: 'Pistas temáticas, drags e noites pop.', accentHex: '#F05AA6', active: true },
+  { id: 'bares', label: 'Bares', tagline: 'Balcões, drinks autorais e cerveja gelada.', accentHex: '#FF5A36', active: true },
+  { id: 'shows', label: 'Shows', tagline: 'Palcos, turnês nacionais e teatros.', accentHex: '#5265FF', active: true },
+  { id: 'cultura', label: 'Cultura', tagline: 'Mostras, cinema de rua, feiras e ocupações.', accentHex: '#5265FF', active: true },
+  { id: 'gratuitos', label: 'Gratuitos', tagline: 'Rolês 0800 na rua, na orla e em centros culturais.', accentHex: '#D5FF52', active: true },
 ];
 
 export const NEIGHBORHOODS: NeighborhoodMeta[] = [
@@ -117,7 +122,7 @@ export function buildDemoEvents(now: Date = new Date()): EventItem[] {
       ageRating: '18+',
       ticketUrl: '',
       lineup: ['DJ Convidado A (Demo)', 'DJ Convidado B (Demo)'],
-      imageUrl: CAMPAIGN_PHOTOS.djPista,
+      imageUrl: CAMPAIGN_PHOTOS.amberCrowd,
       sourceName: 'Base de demonstração ResenhaPOA (ilustrativo)',
       lastVerifiedAt: todayParts.dateISO,
       isVerified: false,
@@ -183,7 +188,7 @@ export function buildDemoEvents(now: Date = new Date()): EventItem[] {
       ageRating: '18+',
       ticketUrl: '',
       lineup: ['Banda Local 01 (Demo)', 'Set Vinil 4D (Demo)'],
-      imageUrl: CAMPAIGN_PHOTOS.pistaGlobo,
+      imageUrl: CAMPAIGN_PHOTOS.cobaltDj,
       sourceName: 'Base de demonstração ResenhaPOA (ilustrativo)',
       lastVerifiedAt: todayParts.dateISO,
       isVerified: false,
@@ -215,7 +220,7 @@ export function buildDemoEvents(now: Date = new Date()): EventItem[] {
       ageRating: '16+',
       ticketUrl: '',
       lineup: ['Grupo de Samba Convidado (Demo)'],
-      imageUrl: CAMPAIGN_PHOTOS.crowdFlash,
+      imageUrl: CAMPAIGN_PHOTOS.crimsonBaile,
       sourceName: 'Base de demonstração ResenhaPOA (ilustrativo)',
       lastVerifiedAt: todayParts.dateISO,
       isVerified: false,
@@ -248,7 +253,7 @@ export function buildDemoEvents(now: Date = new Date()): EventItem[] {
       ageRating: 'Livre',
       ticketUrl: '',
       lineup: ['Expositores independentes (Demo)', 'Apresentação acústica (Demo)'],
-      imageUrl: CAMPAIGN_PHOTOS.galpao,
+      imageUrl: CAMPAIGN_PHOTOS.pista,
       sourceName: 'Base de demonstração ResenhaPOA (ilustrativo)',
       lastVerifiedAt: todayParts.dateISO,
       isVerified: false,
@@ -281,7 +286,7 @@ export function buildDemoEvents(now: Date = new Date()): EventItem[] {
       ageRating: '18+',
       ticketUrl: '',
       lineup: ['DJ Rua (Demo)', 'MC Convidada (Demo)'],
-      imageUrl: CAMPAIGN_PHOTOS.ruaEntrada,
+      imageUrl: CAMPAIGN_PHOTOS.crimsonBaile,
       sourceName: 'Base de demonstração ResenhaPOA (ilustrativo)',
       lastVerifiedAt: todayParts.dateISO,
       isVerified: false,
@@ -313,7 +318,7 @@ export const DEMO_VENUES: VenueItem[] = [
     features: ['Área externa', 'Som ambiente', 'Opções sem álcool'],
     description:
       'Ficha demonstrativa de bar na Cidade Baixa. Quando um estabelecimento real é cadastrado e verificado pela curadoria, exibimos endereço completo, horários conferidos e eventos vinculados ao local.',
-    imageUrl: CAMPAIGN_PHOTOS.ruaEntrada,
+    imageUrl: CAMPAIGN_PHOTOS.warmBar,
     sourceName: 'Base de demonstração ResenhaPOA (ilustrativo)',
     lastVerifiedAt: '2026-11-17',
     isDemoExample: true,
@@ -359,7 +364,7 @@ export const DEMO_VENUES: VenueItem[] = [
     features: ['Pátio aberto', 'Food trucks', 'Pet friendly'],
     description:
       'Exemplo ilustrativo de galpão cervejeiro no Quarto Distrito, região de antigos armazéns que concentram festivais e noites alternativas.',
-    imageUrl: CAMPAIGN_PHOTOS.crowdFlash,
+    imageUrl: CAMPAIGN_PHOTOS.cobaltDj,
     sourceName: 'Base de demonstração ResenhaPOA (ilustrativo)',
     lastVerifiedAt: '2026-11-17',
     isDemoExample: true,
@@ -382,7 +387,7 @@ export const DEMO_VENUES: VenueItem[] = [
     features: ['Acessível', 'Comidinhas', 'Próximo à Redenção'],
     description:
       'Ficha demonstrativa de bar cultural no Bom Fim, ponto de encontro antes ou depois de shows e sessões culturais na região.',
-    imageUrl: CAMPAIGN_PHOTOS.pistaGlobo,
+    imageUrl: CAMPAIGN_PHOTOS.ruaEntrada,
     sourceName: 'Base de demonstração ResenhaPOA (ilustrativo)',
     lastVerifiedAt: '2026-11-17',
     isDemoExample: true,

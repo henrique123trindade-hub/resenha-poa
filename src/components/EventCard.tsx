@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Bookmark, MapPin, ShieldCheck } from 'lucide-react';
+import { Calendar, Heart, MapPin, ShieldCheck } from 'lucide-react';
 import type { EventItem } from '../types/resenha';
 import { formatEventDatePtBr } from '../utils/datePoa';
 import { CATEGORIES, CAMPAIGN_PHOTOS } from '../data/seedCatalog';
-import { getNightlifeSrcSet, isCampaignNightlifePhoto } from '../utils/responsiveImage';
+import { getNightlifeSrcSet } from '../utils/responsiveImage';
 import { useAuth } from '../contexts/AuthContext';
 import { toggleFavoriteInFirestore } from '../services/firestoreService';
 import { useToast } from './Layout';
@@ -13,36 +13,48 @@ interface EventCardProps {
   event: EventItem;
   layout?: 'poster' | 'grid' | 'list' | 'feature';
   surface?: 'dark' | 'light';
+  reasonLabel?: string;
 }
 
 export const EventCard: React.FC<EventCardProps> = ({
   event,
   layout = 'poster',
   surface = 'dark',
+  reasonLabel,
 }) => {
   const { user, isFavorited, openAuthModal } = useAuth();
   const { notify } = useToast();
   const saved = isFavorited('event', event.id);
 
-  const catLabel = CATEGORIES.find((c) => c.id === event.category)?.label || event.category;
+  const catMeta = CATEGORIES.find((c) => c.id === event.category);
+  const catLabel = catMeta?.label || event.category;
   const dateLabel = formatEventDatePtBr(event.dateISO);
-  const priceText =
-    event.priceType === 'free'
-      ? 'GRÁTIS'
-      : event.priceType === 'paid' && typeof event.priceMin === 'number'
-        ? `R$ ${event.priceMin}`
-        : event.priceLabel || 'A confirmar';
+  const isFree = event.priceType === 'free';
+
+  const priceText = isFree
+    ? 'Grátis'
+    : event.priceType === 'paid' && typeof event.priceMin === 'number'
+      ? `R$ ${event.priceMin}`
+      : event.priceType === 'unconfirmed'
+        ? 'A confirmar'
+        : event.priceLabel && event.priceLabel.length <= 16
+          ? event.priceLabel
+          : 'A confirmar';
 
   const fallbackPhoto =
-    event.category === 'bares'
-      ? CAMPAIGN_PHOTOS.galpao
-      : event.category === 'gratuitos' || event.category === 'cultura'
-        ? CAMPAIGN_PHOTOS.orla
-        : CAMPAIGN_PHOTOS.djPista;
+    event.category === 'eletronica'
+      ? CAMPAIGN_PHOTOS.cobaltDj
+      : event.category === 'funk' || event.category === 'pagode-samba'
+        ? CAMPAIGN_PHOTOS.crimsonBaile
+        : event.category === 'bares'
+          ? CAMPAIGN_PHOTOS.warmBar
+          : event.category === 'gratuitos' || event.category === 'cultura'
+            ? CAMPAIGN_PHOTOS.orla
+            : CAMPAIGN_PHOTOS.amberCrowd;
 
   const imgSrc = event.imageUrl || fallbackPhoto;
   const imgSrcSet = getNightlifeSrcSet(imgSrc);
-  const applyBwTreatment = !event.imageUrl || event.isDemoExample || isCampaignNightlifePhoto(imgSrc);
+  const imgLoading = imgSrc.startsWith('/assets/') ? 'eager' : 'lazy';
 
   const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -59,7 +71,7 @@ export const EventCard: React.FC<EventCardProps> = ({
         title: event.title,
         currentlySaved: saved,
       });
-      notify(next ? 'Evento salvo na sua conta.' : 'Removido dos seus favoritos.');
+      notify(next ? 'Evento salvo nos seus favoritos.' : 'Removido dos seus favoritos.');
     } catch {
       notify('Não foi possível atualizar seus favoritos.');
     }
@@ -69,27 +81,25 @@ export const EventCard: React.FC<EventCardProps> = ({
     const isLight = surface === 'light';
     return (
       <article
-        className={`border rounded-md transition-colors flex flex-col sm:flex-row overflow-hidden group ${
+        className={`card-lift border rounded-xl flex flex-col sm:flex-row overflow-hidden group ${
           isLight
-            ? 'bg-white border-[#D8D8D4] hover:border-[#080808] text-[#080808]'
-            : 'bg-[#141414] border-[#292929] hover:border-[#F4F4F2]/70 text-[#F4F4F2]'
+            ? 'bg-white border-[#E2E2DE] hover:border-[#101012] text-[#101012]'
+            : 'bg-[#1C1C20] border-[#28282E] hover:border-[#F7F7F5]/60 text-[#F7F7F5]'
         }`}
       >
         <Link
           to={`/eventos/${event.slug}`}
-          className="sm:w-52 md:w-60 shrink-0 aspect-[16/10] sm:aspect-auto relative bg-[#080808] overflow-hidden"
+          className="sm:w-52 md:w-56 shrink-0 aspect-[16/10] sm:aspect-auto relative bg-[#101012] overflow-hidden"
         >
           <img
             src={imgSrc}
             srcSet={imgSrcSet}
-            sizes="(max-width: 640px) 100vw, 240px"
+            sizes="(max-width: 640px) 100vw, 224px"
             alt={event.title}
-            loading="lazy"
+            loading={imgLoading}
             decoding="async"
             referrerPolicy="no-referrer"
-            className={`w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300 ${
-              applyBwTreatment ? 'bw-editorial-photo' : ''
-            }`}
+            className="w-full h-full object-cover nightlife-color-photo group-hover:scale-[1.04] transition-transform duration-300"
           />
         </Link>
 
@@ -98,14 +108,10 @@ export const EventCard: React.FC<EventCardProps> = ({
             <div className="flex items-center justify-between gap-3 mb-1.5">
               <div
                 className={`flex flex-wrap items-center gap-2 text-xs ${
-                  isLight ? 'text-[#525252]' : 'text-[#858585]'
+                  isLight ? 'text-[#52525B]' : 'text-[#98989F]'
                 }`}
               >
-                <span
-                  className={`font-bold uppercase tracking-wider ${
-                    isLight ? 'text-[#080808]' : 'text-[#F4F4F2]'
-                  }`}
-                >
+                <span className="font-bold uppercase tracking-wider text-[#FF5A36]">
                   {catLabel}
                 </span>
                 <span aria-hidden="true">·</span>
@@ -127,7 +133,7 @@ export const EventCard: React.FC<EventCardProps> = ({
                 {event.status === 'cancelled' && (
                   <>
                     <span aria-hidden="true">·</span>
-                    <span className="font-bold uppercase underline">Cancelado</span>
+                    <span className="font-bold uppercase text-red-500">Cancelado</span>
                   </>
                 )}
               </div>
@@ -137,29 +143,27 @@ export const EventCard: React.FC<EventCardProps> = ({
                 onClick={handleSave}
                 aria-label={saved ? `Remover ${event.title} dos favoritos` : `Salvar ${event.title}`}
                 aria-pressed={saved}
-                className={`w-9 h-9 shrink-0 rounded-md flex items-center justify-center border transition-colors ${
+                className={`w-9 h-9 shrink-0 rounded-full flex items-center justify-center border transition-colors ${
                   saved
-                    ? isLight
-                      ? 'bg-[#080808] border-[#080808] text-[#F4F4F2]'
-                      : 'bg-[#F4F4F2] border-[#F4F4F2] text-[#080808]'
+                    ? 'bg-[#FF5A36] border-[#FF5A36] text-[#101012]'
                     : isLight
-                      ? 'border-[#D8D8D4] text-[#080808] hover:border-[#080808]'
-                      : 'border-[#292929] text-[#F4F4F2] hover:border-[#F4F4F2]'
+                      ? 'border-[#E2E2DE] text-[#101012] hover:border-[#FF5A36] hover:text-[#FF5A36]'
+                      : 'border-[#28282E] text-[#F7F7F5] hover:border-[#FF5A36] hover:text-[#FF5A36]'
                 }`}
               >
-                <Bookmark className="w-4 h-4" fill={saved ? 'currentColor' : 'none'} />
+                <Heart className="w-4 h-4" fill={saved ? 'currentColor' : 'none'} />
               </button>
             </div>
 
             <Link to={`/eventos/${event.slug}`}>
-              <h3 className="font-display text-2xl font-extrabold uppercase tracking-tight leading-tight group-hover:underline">
+              <h3 className="font-display text-2xl font-extrabold uppercase tracking-tight leading-tight group-hover:text-[#FF5A36] transition-colors">
                 {event.title}
               </h3>
             </Link>
             {event.subtitle && (
               <p
                 className={`text-sm mt-1 line-clamp-2 ${
-                  isLight ? 'text-[#525252]' : 'text-[#858585]'
+                  isLight ? 'text-[#52525B]' : 'text-[#98989F]'
                 }`}
               >
                 {event.subtitle}
@@ -169,20 +173,20 @@ export const EventCard: React.FC<EventCardProps> = ({
 
           <div
             className={`pt-3 border-t flex flex-wrap items-center justify-between gap-3 text-xs ${
-              isLight ? 'border-[#E5E5E1]' : 'border-[#292929]'
+              isLight ? 'border-[#E8E8E6]' : 'border-[#28282E]'
             }`}
           >
             <div
               className={`flex flex-wrap items-center gap-2 ${
-                isLight ? 'text-[#525252]' : 'text-[#858585]'
+                isLight ? 'text-[#52525B]' : 'text-[#98989F]'
               }`}
             >
               <span
                 className={`inline-flex items-center gap-1 font-semibold ${
-                  isLight ? 'text-[#080808]' : 'text-[#F4F4F2]'
+                  isLight ? 'text-[#101012]' : 'text-[#F7F7F5]'
                 }`}
               >
-                <MapPin className="w-3.5 h-3.5" />
+                <MapPin className="w-3.5 h-3.5 text-[#FF5A36]" />
                 {event.neighborhood}
               </span>
               <span aria-hidden="true">·</span>
@@ -190,7 +194,13 @@ export const EventCard: React.FC<EventCardProps> = ({
               <span aria-hidden="true">·</span>
               <span
                 className={`tabular-nums font-bold ${
-                  isLight ? 'text-[#080808]' : 'text-[#F4F4F2]'
+                  isFree
+                    ? isLight
+                      ? 'bg-[#101012] text-[#D5FF52] px-2 py-0.5 rounded'
+                      : 'text-[#D5FF52]'
+                    : isLight
+                      ? 'text-[#101012]'
+                      : 'text-[#F7F7F5]'
                 }`}
               >
                 {priceText}
@@ -201,8 +211,8 @@ export const EventCard: React.FC<EventCardProps> = ({
 
             <Link
               to={`/eventos/${event.slug}`}
-              className={`font-bold uppercase tracking-wider hover:underline whitespace-nowrap ${
-                isLight ? 'text-[#080808]' : 'text-[#F4F4F2]'
+              className={`font-bold uppercase tracking-wider hover:text-[#FF5A36] whitespace-nowrap transition-colors ${
+                isLight ? 'text-[#101012]' : 'text-[#F7F7F5]'
               }`}
             >
               Ver rolê →
@@ -213,87 +223,191 @@ export const EventCard: React.FC<EventCardProps> = ({
     );
   }
 
-  // Default Nightlife Poster Card (matches reference "EM ALTA NA CIDADE" — photo-first, high contrast B&W)
+  // Asymmetric Spotlight Feature Card (for special featured slot)
+  if (layout === 'feature') {
+    return (
+      <article className="card-lift relative rounded-2xl overflow-hidden bg-[#101012] border border-[#28282E] hover:border-[#FF5A36]/80 group h-full min-h-[340px] flex flex-col justify-end">
+        <Link to={`/eventos/${event.slug}`} className="absolute inset-0">
+          <img
+            src={imgSrc}
+            srcSet={imgSrcSet}
+            sizes="(max-width: 1024px) 100vw, 50vw"
+            alt={event.title}
+            loading={imgLoading}
+            decoding="async"
+            referrerPolicy="no-referrer"
+            className="w-full h-full object-cover nightlife-color-photo group-hover:scale-[1.04] transition-transform duration-500"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-gradient-to-t from-[#101012] via-[#101012]/55 to-black/15"
+          />
+        </Link>
+
+        <div className="relative z-10 p-5 sm:p-6 flex flex-col justify-between h-full pointer-events-none">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-wider">
+              <span className="bg-[#101012]/80 backdrop-blur-xs text-[#F7F7F5] px-2.5 py-1 rounded-md">
+                {catLabel}
+              </span>
+              {event.isDemoExample && (
+                <span className="bg-[#101012]/75 text-[#98989F] px-2 py-1 rounded-md">
+                  Exemplo
+                </span>
+              )}
+              {reasonLabel && (
+                <span className="bg-[#5265FF] text-[#F7F7F5] px-2.5 py-1 rounded-md">
+                  {reasonLabel}
+                </span>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSave}
+              aria-label={saved ? `Remover ${event.title} dos favoritos` : `Salvar ${event.title}`}
+              aria-pressed={saved}
+              className={`pointer-events-auto w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-xs transition-colors ${
+                saved
+                  ? 'bg-[#FF5A36] text-[#101012]'
+                  : 'bg-[#101012]/70 text-[#F7F7F5] hover:bg-[#FF5A36] hover:text-[#101012]'
+              }`}
+            >
+              <Heart className="w-4 h-4" fill={saved ? 'currentColor' : 'none'} />
+            </button>
+          </div>
+
+          <Link
+            to={`/eventos/${event.slug}`}
+            className="pointer-events-auto mt-auto pt-16 space-y-2 text-[#F7F7F5]"
+          >
+            <h3 className="font-display text-3xl sm:text-4xl font-extrabold italic uppercase leading-[0.95] tracking-tight group-hover:text-[#FF5A36] transition-colors">
+              {event.title}
+            </h3>
+            {event.subtitle && (
+              <p className="text-xs sm:text-sm text-[#E8E8E6]/85 line-clamp-2 max-w-lg">
+                {event.subtitle}
+              </p>
+            )}
+            <div className="pt-2 flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm">
+              <div className="flex flex-wrap items-center gap-3 text-[#E8E8E6]/90">
+                <span className="inline-flex items-center gap-1.5 tabular-nums">
+                  <Calendar className="w-3.5 h-3.5 text-[#FF5A36]" />
+                  {dateLabel} · {event.startTime}
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-[#FF5A36]" />
+                  {event.neighborhood}
+                </span>
+              </div>
+              <span
+                className={`font-extrabold tabular-nums text-base ${
+                  isFree ? 'text-[#D5FF52]' : 'text-[#F7F7F5]'
+                }`}
+              >
+                {priceText}
+              </span>
+            </div>
+          </Link>
+        </div>
+      </article>
+    );
+  }
+
+  // Default ResenhaPOA 2.0 Vibrant Poster Card (matches reference "EM ALTA NA CIDADE")
   return (
-    <article className="relative bg-[#141414] border border-[#292929] hover:border-[#F4F4F2]/75 rounded-md overflow-hidden group transition-colors flex flex-col">
-      <div className="relative aspect-[4/3.6] bg-[#080808] overflow-hidden">
+    <article
+      className={`card-lift relative rounded-2xl overflow-hidden bg-[#101012] group flex flex-col shadow-lg ${
+        surface === 'light'
+          ? 'ring-1 ring-[#101012]/10'
+          : 'border border-[#28282E] hover:border-[#F7F7F5]/50'
+      }`}
+    >
+      <div className="relative aspect-[4/3.7] bg-[#101012] overflow-hidden">
         <Link to={`/eventos/${event.slug}`} className="block w-full h-full">
           <img
             src={imgSrc}
             srcSet={imgSrcSet}
             sizes="(max-width: 640px) 82vw, (max-width: 1024px) 46vw, 24vw"
             alt={event.title}
-            loading="lazy"
+            loading={imgLoading}
             decoding="async"
             referrerPolicy="no-referrer"
-            className={`w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-300 ${
-              applyBwTreatment ? 'bw-editorial-photo' : ''
-            }`}
+            className="w-full h-full object-cover nightlife-color-photo group-hover:scale-[1.05] transition-transform duration-300"
           />
-          {/* Controlled contrast scrim for legibility without crushing upper stage lighting */}
+          {/* Balanced scrim keeping upper stage lighting vivid while guaranteeing 4.5:1+ bottom text contrast */}
           <div
             aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-t from-[#080808] via-[#080808]/60 to-transparent"
+            className="absolute inset-0 bg-gradient-to-t from-[#101012] via-[#101012]/55 to-black/10"
           />
         </Link>
 
-        {/* Quiet Editorial Flags Only When Needed */}
-        {(event.status === 'cancelled' || event.isDemoExample || event.isVerified) && (
-          <div className="absolute top-3 left-3 pointer-events-none flex items-center gap-1.5">
-            {event.status === 'cancelled' ? (
-              <span className="bg-[#F4F4F2] text-[#080808] text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-[2px]">
-                Cancelado
-              </span>
-            ) : event.isVerified ? (
-              <span className="bg-[#080808]/85 border border-[#F4F4F2]/30 text-[#F4F4F2] text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-[2px] inline-flex items-center gap-1">
-                <ShieldCheck className="w-3 h-3" /> Verificado
-              </span>
-            ) : (
-              <span className="bg-[#080808]/80 border border-[#292929] text-[#F4F4F2]/85 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-[2px]">
-                Exemplo
-              </span>
-            )}
-          </div>
-        )}
+        {/* Top-Left Clean Category Label */}
+        <div className="absolute top-3.5 left-3.5 pointer-events-none flex items-center gap-1.5">
+          <span className="bg-[#101012]/78 backdrop-blur-xs text-[#F7F7F5] text-[11px] font-semibold px-2.5 py-1 rounded-md">
+            {catLabel}
+          </span>
+          {event.status === 'cancelled' && (
+            <span className="bg-red-600 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md">
+              Cancelado
+            </span>
+          )}
+          {event.isVerified && (
+            <span className="bg-[#101012]/80 text-[#D5FF52] text-[10px] font-semibold px-2 py-1 rounded-md inline-flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3" /> Verificado
+            </span>
+          )}
+        </div>
 
-        {/* Bookmark Button */}
+        {/* Top-Right Heart Favorite Button */}
         <button
           type="button"
           onClick={handleSave}
           aria-label={saved ? `Remover ${event.title} dos favoritos` : `Salvar ${event.title}`}
           aria-pressed={saved}
-          className={`absolute top-3 right-3 w-8 h-8 rounded-[4px] flex items-center justify-center border transition-colors ${
+          className={`absolute top-3.5 right-3.5 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-xs transition-colors ${
             saved
-              ? 'bg-[#F4F4F2] border-[#F4F4F2] text-[#080808]'
-              : 'bg-[#080808]/75 border-[#F4F4F2]/25 text-[#F4F4F2] hover:bg-[#F4F4F2] hover:text-[#080808]'
+              ? 'bg-[#FF5A36] text-[#101012]'
+              : 'bg-[#101012]/65 text-[#F7F7F5] hover:bg-[#FF5A36] hover:text-[#101012]'
           }`}
         >
-          <Bookmark className="w-4 h-4" fill={saved ? 'currentColor' : 'none'} />
+          <Heart className="w-4 h-4" fill={saved ? 'currentColor' : 'none'} />
         </button>
 
-        {/* Overlay Event Copy (Reference Structure) */}
+        {/* Bottom Editorial Copy */}
         <Link
           to={`/eventos/${event.slug}`}
-          className="absolute inset-x-0 bottom-0 p-4 flex flex-col gap-1.5 text-[#F4F4F2]"
+          className="absolute inset-x-0 bottom-0 p-4 flex flex-col gap-1.5 text-[#F7F7F5]"
         >
-          <div className="flex items-center gap-1.5 text-[11px] font-medium text-[#F4F4F2]/80 tabular-nums">
-            <span>{dateLabel}</span>
-            <span aria-hidden="true">·</span>
-            <span>{event.startTime}</span>
-            <span aria-hidden="true">·</span>
-            <span className="uppercase tracking-wider">{catLabel}</span>
-          </div>
+          {reasonLabel && (
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#D5FF52]">
+              {reasonLabel}
+            </span>
+          )}
 
-          <h3 className="font-display text-[22px] sm:text-2xl font-extrabold uppercase italic leading-[0.98] tracking-tight text-[#F4F4F2] line-clamp-2 group-hover:underline">
+          <h3 className="font-display text-[23px] sm:text-2xl font-extrabold uppercase leading-[0.98] tracking-tight text-[#F7F7F5] line-clamp-2 group-hover:text-[#FF5A36] transition-colors">
             {event.title}
           </h3>
 
-          <div className="pt-1.5 flex items-center justify-between gap-2 text-xs">
-            <span className="inline-flex items-center gap-1 text-[#F4F4F2]/90 truncate">
-              <MapPin className="w-3.5 h-3.5 shrink-0 text-[#858585]" />
+          <div className="flex items-center gap-1.5 text-xs text-[#E8E8E6]/85 tabular-nums">
+            <Calendar className="w-3.5 h-3.5 text-[#98989F] shrink-0" />
+            <span className="truncate">
+              {dateLabel} · {event.startTime}
+            </span>
+          </div>
+
+          <div className="pt-0.5 flex items-center justify-between gap-2 text-xs">
+            <span className="inline-flex items-center gap-1 text-[#E8E8E6]/90 truncate">
+              <MapPin className="w-3.5 h-3.5 shrink-0 text-[#98989F]" />
               <span className="truncate">{event.neighborhood}</span>
             </span>
-            <span className="font-bold tabular-nums text-[#F4F4F2] shrink-0">{priceText}</span>
+            <span
+              className={`font-extrabold tabular-nums text-sm shrink-0 ${
+                isFree ? 'text-[#D5FF52]' : 'text-[#F7F7F5]'
+              }`}
+            >
+              {priceText}
+            </span>
           </div>
         </Link>
       </div>

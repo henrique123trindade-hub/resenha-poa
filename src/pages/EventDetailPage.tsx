@@ -3,11 +3,11 @@ import { Link, useParams } from 'react-router-dom';
 import {
   AlertTriangle,
   ArrowLeft,
-  Bookmark,
   Calendar,
   Copy,
   ExternalLink,
   Flag,
+  Heart,
   Info,
   MapPin,
   Share2,
@@ -18,10 +18,11 @@ import { useCatalog } from '../contexts/CatalogContext';
 import { useAuth } from '../contexts/AuthContext';
 import { CAMPAIGN_PHOTOS, CATEGORIES } from '../data/seedCatalog';
 import { formatEventDatePtBr, formatIsoDateFullPtBr } from '../utils/datePoa';
-import { getNightlifeSrcSet, isCampaignNightlifePhoto } from '../utils/responsiveImage';
+import { getNightlifeSrcSet } from '../utils/responsiveImage';
 import { toggleFavoriteInFirestore, submitReport } from '../services/firestoreService';
 import { PoaMapView } from '../components/PoaMapView';
 import { EventCard } from '../components/EventCard';
+import { SectionKicker } from '../components/BrandMark';
 import { useToast } from '../components/Layout';
 
 export const EventDetailPage: React.FC = () => {
@@ -37,19 +38,19 @@ export const EventDetailPage: React.FC = () => {
 
   if (!event) {
     return (
-      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center space-y-5 text-[#F4F4F2]">
-        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#858585]">
+      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center space-y-5 text-[#F7F7F5]">
+        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#98989F]">
           Evento não localizado
         </p>
         <h1 className="font-display text-4xl sm:text-5xl font-extrabold italic uppercase tracking-tight">
           Este rolê não está disponível
         </h1>
-        <p className="text-sm text-[#858585] max-w-md mx-auto">
+        <p className="text-sm text-[#98989F] max-w-md mx-auto">
           O evento pode ter sido encerrado, removido ou o link está incorreto.
         </p>
         <Link
           to="/eventos"
-          className="inline-block px-6 py-3 rounded-md bg-[#F4F4F2] hover:bg-white text-[#080808] text-xs font-bold uppercase tracking-wider transition-colors"
+          className="inline-block px-6 py-3 rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] text-[#101012] text-xs font-extrabold uppercase tracking-wider transition-colors"
         >
           Explorar agenda de Porto Alegre
         </Link>
@@ -58,16 +59,16 @@ export const EventDetailPage: React.FC = () => {
   }
 
   const saved = isFavorited('event', event.id);
-  const catLabel = CATEGORIES.find((c) => c.id === event.category)?.label || event.category;
-  const priceText =
-    event.priceType === 'free'
-      ? 'Gratuito'
-      : event.priceType === 'paid' && typeof event.priceMin === 'number'
-        ? `A partir de R$ ${event.priceMin}`
-        : event.priceLabel || 'Valor a confirmar com o organizador';
+  const catMeta = CATEGORIES.find((c) => c.id === event.category);
+  const catLabel = catMeta?.label || event.category;
+  const isFree = event.priceType === 'free';
+  const priceText = isFree
+    ? 'Gratuito'
+    : event.priceType === 'paid' && typeof event.priceMin === 'number'
+      ? `A partir de R$ ${event.priceMin}`
+      : event.priceLabel || 'Valor a confirmar com o organizador';
 
-  const heroImg = event.imageUrl || CAMPAIGN_PHOTOS.pista;
-  const applyBwTreatment = !event.imageUrl || event.isDemoExample || isCampaignNightlifePhoto(heroImg);
+  const heroImg = event.imageUrl || CAMPAIGN_PHOTOS.amberCrowd;
 
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
   const whatsappHref = `https://wa.me/?text=${encodeURIComponent(
@@ -140,10 +141,10 @@ export const EventDetailPage: React.FC = () => {
     .slice(0, 3);
 
   return (
-    <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 text-[#F4F4F2]">
+    <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 text-[#F7F7F5]">
       <Link
         to="/eventos"
-        className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#858585] hover:text-[#F4F4F2] mb-6 transition-colors"
+        className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#98989F] hover:text-[#F7F7F5] mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" /> Voltar para agenda
       </Link>
@@ -151,7 +152,7 @@ export const EventDetailPage: React.FC = () => {
       {/* Status / Transparency Banners */}
       <div className="space-y-3 mb-6">
         {event.status === 'cancelled' && (
-          <div className="p-4 rounded-md bg-[#141414] border border-red-400/50 flex items-center gap-3 text-sm text-[#F4F4F2]">
+          <div className="p-4 rounded-xl bg-[#1C1C20] border border-red-400/50 flex items-center gap-3 text-sm text-[#F7F7F5]">
             <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
             <span>
               <strong>Evento cancelado:</strong> o organizador informou o cancelamento desta edição.
@@ -159,10 +160,10 @@ export const EventDetailPage: React.FC = () => {
           </div>
         )}
         {event.isDemoExample && (
-          <div className="p-4 rounded-md bg-[#141414] border border-[#292929] flex items-center gap-3 text-xs sm:text-sm text-[#858585]">
-            <Info className="w-4 h-4 text-[#F4F4F2] shrink-0" />
+          <div className="p-4 rounded-xl bg-[#1C1C20] border border-[#28282E] flex items-center gap-3 text-xs sm:text-sm text-[#98989F]">
+            <Info className="w-4 h-4 text-[#FF5A36] shrink-0" />
             <span>
-              <strong className="text-[#F4F4F2]">Registro de demonstração:</strong> esta ficha
+              <strong className="text-[#F7F7F5]">Registro de demonstração:</strong> esta ficha
               ilustra o formato de eventos no ResenhaPOA. Não representa uma atração comercial real.
             </span>
           </div>
@@ -173,70 +174,82 @@ export const EventDetailPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left: Editorial Content */}
         <div className="lg:col-span-8 space-y-8">
-          <div className="rounded-md border border-[#292929] bg-[#141414] overflow-hidden">
-            <img
-              src={heroImg}
-              srcSet={getNightlifeSrcSet(heroImg)}
-              sizes="(max-width: 1024px) 100vw, 66vw"
-              alt={event.title}
-              referrerPolicy="no-referrer"
-              className={`w-full h-[300px] sm:h-[420px] object-cover ${
-                applyBwTreatment ? 'bw-editorial-photo' : ''
-              }`}
-            />
-            <div className="p-6 sm:p-8 space-y-5">
-              <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-[#858585]">
-                <span className="font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-[2px] bg-[#F4F4F2] text-[#080808]">
+          <div className="rounded-2xl border border-[#28282E] bg-[#1C1C20] overflow-hidden">
+            <div className="relative overflow-hidden">
+              <img
+                src={heroImg}
+                srcSet={getNightlifeSrcSet(heroImg)}
+                sizes="(max-width: 1024px) 100vw, 66vw"
+                alt={event.title}
+                referrerPolicy="no-referrer"
+                className="w-full h-[300px] sm:h-[440px] object-cover nightlife-color-photo"
+              />
+              <div
+                aria-hidden="true"
+                className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#1C1C20] via-[#1C1C20]/40 to-transparent"
+              />
+              <div className="absolute top-4 left-4 flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#101012]/80 backdrop-blur-sm border border-white/15 text-[#F7F7F5]">
                   {catLabel}
                 </span>
-                <span>{event.neighborhood}</span>
+                {isFree && (
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-[#D5FF52] text-[#101012]">
+                    Grátis
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="p-6 sm:p-8 space-y-5">
+              <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-[#98989F]">
+                <span className="text-[#F7F7F5] font-semibold">{event.neighborhood}</span>
                 <span aria-hidden="true">·</span>
-                <span className="text-[#F4F4F2] font-semibold">Classificação: {event.ageRating}</span>
+                <span className="text-[#F7F7F5] font-semibold">Classificação: {event.ageRating}</span>
                 {event.isSponsored && (
                   <>
                     <span aria-hidden="true">·</span>
-                    <span className="text-[#F4F4F2] font-medium">Conteúdo patrocinado</span>
+                    <span className="text-[#FF5A36] font-semibold">Conteúdo patrocinado</span>
                   </>
                 )}
                 {event.isVerified && (
                   <>
                     <span aria-hidden="true">·</span>
-                    <span className="inline-flex items-center gap-1 text-[#F4F4F2] font-semibold">
+                    <span className="inline-flex items-center gap-1 text-[#D5FF52] font-semibold">
                       <ShieldCheck className="w-3.5 h-3.5" /> Fonte verificada
                     </span>
                   </>
                 )}
               </div>
 
-              <h1 className="font-display text-3xl sm:text-5xl font-extrabold italic uppercase tracking-tight leading-[0.98] text-[#F4F4F2]">
+              <h1 className="font-display text-3xl sm:text-5xl font-extrabold italic uppercase tracking-tight leading-[0.98] text-[#F7F7F5]">
                 {event.title}
               </h1>
 
               {event.subtitle && (
-                <p className="text-base sm:text-lg text-[#858585] leading-relaxed">
+                <p className="text-base sm:text-lg text-[#98989F] leading-relaxed">
                   {event.subtitle}
                 </p>
               )}
 
-              <div className="pt-5 border-t border-[#292929] space-y-3">
-                <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#858585]">
+              <div className="pt-5 border-t border-[#28282E] space-y-3">
+                <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#98989F]">
                   Sobre a programação
                 </h2>
-                <p className="text-sm sm:text-base text-[#F4F4F2]/90 whitespace-pre-line leading-relaxed">
+                <p className="text-sm sm:text-base text-[#F7F7F5]/90 whitespace-pre-line leading-relaxed">
                   {event.description}
                 </p>
               </div>
 
               {event.lineup && event.lineup.length > 0 && (
-                <div className="pt-5 border-t border-[#292929]">
-                  <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#858585] mb-3">
+                <div className="pt-5 border-t border-[#28282E]">
+                  <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#98989F] mb-3">
                     Atrações / Line-up informado
                   </h2>
                   <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {event.lineup.map((artist, idx) => (
                       <li
                         key={`${artist}-${idx}`}
-                        className="px-4 py-2.5 rounded-md bg-[#080808] border border-[#292929] text-sm font-medium text-[#F4F4F2]"
+                        className="px-4 py-3 rounded-xl bg-[#101012] border border-[#28282E] text-sm font-medium text-[#F7F7F5]"
                       >
                         {artist}
                       </li>
@@ -246,16 +259,16 @@ export const EventDetailPage: React.FC = () => {
               )}
 
               {/* Source & Verification Transparency */}
-              <div className="pt-5 border-t border-[#292929] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-[#858585]">
+              <div className="pt-5 border-t border-[#28282E] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-[#98989F]">
                 <span>
-                  Organização: <strong className="text-[#F4F4F2]">{event.organizerName}</strong> ·
+                  Organização: <strong className="text-[#F7F7F5]">{event.organizerName}</strong> ·
                   Origem: {event.sourceName}
                   {event.lastVerifiedAt ? ` · Conferido em ${event.lastVerifiedAt}` : ''}
                 </span>
                 <button
                   type="button"
                   onClick={() => setReportOpen((v) => !v)}
-                  className="inline-flex items-center gap-1.5 text-[#858585] hover:text-[#F4F4F2] underline self-start sm:self-auto"
+                  className="inline-flex items-center gap-1.5 text-[#98989F] hover:text-[#F7F7F5] underline self-start sm:self-auto"
                 >
                   <Flag className="w-3.5 h-3.5" /> Reportar informação incorreta
                 </button>
@@ -264,9 +277,9 @@ export const EventDetailPage: React.FC = () => {
               {reportOpen && (
                 <form
                   onSubmit={handleReportSubmit}
-                  className="p-4 rounded-md bg-[#080808] border border-[#292929] space-y-3"
+                  className="p-4 rounded-xl bg-[#101012] border border-[#28282E] space-y-3"
                 >
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[#F4F4F2]">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[#F7F7F5]">
                     O que precisa de correção nesta ficha?
                   </label>
                   <textarea
@@ -274,20 +287,20 @@ export const EventDetailPage: React.FC = () => {
                     value={reportReason}
                     onChange={(e) => setReportReason(e.target.value)}
                     placeholder="Ex: horário alterado, valor incorreto, evento cancelado..."
-                    className="w-full rounded-md bg-[#141414] border border-[#292929] p-3 text-sm text-[#F4F4F2] focus:border-[#F4F4F2] focus:outline-none"
+                    className="w-full rounded-xl bg-[#1C1C20] border border-[#28282E] p-3 text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:border-[#FF5A36] focus:outline-none"
                   />
                   <div className="flex gap-2 justify-end">
                     <button
                       type="button"
                       onClick={() => setReportOpen(false)}
-                      className="px-4 py-2 text-xs font-semibold text-[#858585] hover:text-[#F4F4F2]"
+                      className="px-4 py-2 text-xs font-semibold text-[#98989F] hover:text-[#F7F7F5]"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
                       disabled={reportBusy}
-                      className="px-4 py-2 rounded-md bg-[#F4F4F2] text-[#080808] text-xs font-bold uppercase tracking-wider"
+                      className="px-4 py-2 rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] text-[#101012] text-xs font-extrabold uppercase tracking-wider transition-colors"
                     >
                       {reportBusy ? 'Enviando...' : 'Enviar aviso'}
                     </button>
@@ -300,9 +313,7 @@ export const EventDetailPage: React.FC = () => {
           {/* Map Section */}
           {typeof event.lat === 'number' && typeof event.lng === 'number' && (
             <div className="space-y-3">
-              <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#858585]">
-                Localização em Porto Alegre
-              </h2>
+              <SectionKicker label="Localização em Porto Alegre" accentColor="#5265FF" />
               <PoaMapView
                 center={{ lat: event.lat, lng: event.lng }}
                 zoom={15}
@@ -327,18 +338,18 @@ export const EventDetailPage: React.FC = () => {
 
         {/* Right: Action Sidebar */}
         <aside className="lg:col-span-4 space-y-5">
-          <div className="bg-[#141414] border border-[#292929] rounded-md p-6 space-y-5 sticky top-24">
-            <div className="space-y-4 pb-5 border-b border-[#292929]">
+          <div className="bg-[#1C1C20] border border-[#28282E] rounded-2xl p-6 space-y-5 sticky top-24">
+            <div className="space-y-4 pb-5 border-b border-[#28282E]">
               <div className="flex items-start gap-3">
-                <Calendar className="w-4 h-4 text-[#F4F4F2] shrink-0 mt-1" />
+                <Calendar className="w-4 h-4 text-[#FF5A36] shrink-0 mt-1" />
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-[#858585]">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-[#98989F]">
                     Data e horário
                   </p>
-                  <p className="text-sm font-semibold text-[#F4F4F2] capitalize">
+                  <p className="text-sm font-semibold text-[#F7F7F5] capitalize">
                     {formatIsoDateFullPtBr(event.dateISO)}
                   </p>
-                  <p className="text-xs text-[#858585] mt-0.5 tabular-nums">
+                  <p className="text-xs text-[#98989F] mt-0.5 tabular-nums">
                     Início às {event.startTime}
                     {event.endTime ? ` · Previsão de término ${event.endTime}` : ''}
                   </p>
@@ -346,26 +357,30 @@ export const EventDetailPage: React.FC = () => {
               </div>
 
               <div className="flex items-start gap-3">
-                <MapPin className="w-4 h-4 text-[#F4F4F2] shrink-0 mt-1" />
+                <MapPin className="w-4 h-4 text-[#5265FF] shrink-0 mt-1" />
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-[#858585]">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-[#98989F]">
                     Local e endereço
                   </p>
-                  <p className="text-sm font-semibold text-[#F4F4F2]">{event.venueName}</p>
-                  <p className="text-xs text-[#858585] mt-0.5">{event.address}</p>
+                  <p className="text-sm font-semibold text-[#F7F7F5]">{event.venueName}</p>
+                  <p className="text-xs text-[#98989F] mt-0.5">{event.address}</p>
                 </div>
               </div>
             </div>
 
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-wider text-[#858585] mb-1">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-[#98989F] mb-1">
                 Valor de entrada
               </p>
-              <p className="font-display text-3xl font-extrabold italic uppercase text-[#F4F4F2] tabular-nums">
+              <p
+                className={`font-display text-3xl font-extrabold italic uppercase tabular-nums ${
+                  isFree ? 'text-[#D5FF52]' : 'text-[#F7F7F5]'
+                }`}
+              >
                 {priceText}
               </p>
-              <p className="text-xs text-[#858585] mt-1">
-                Classificação etária: <strong className="text-[#F4F4F2]">{event.ageRating}</strong>
+              <p className="text-xs text-[#98989F] mt-1">
+                Classificação etária: <strong className="text-[#F7F7F5]">{event.ageRating}</strong>
               </p>
             </div>
 
@@ -375,13 +390,13 @@ export const EventDetailPage: React.FC = () => {
                   href={event.ticketUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-3.5 px-5 rounded-md bg-[#F4F4F2] hover:bg-white text-[#080808] font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2 transition-colors"
+                  className="w-full py-3.5 px-5 rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] text-[#101012] font-extrabold uppercase tracking-wider text-xs flex items-center justify-center gap-2 transition-colors"
                 >
                   <span>Garantir ingresso (site oficial)</span>
                   <ExternalLink className="w-4 h-4" />
                 </a>
               ) : (
-                <div className="p-3.5 rounded-md bg-[#080808] border border-[#292929] text-xs text-[#858585]">
+                <div className="p-3.5 rounded-xl bg-[#101012] border border-[#28282E] text-xs text-[#98989F]">
                   {event.priceType === 'free'
                     ? 'Evento gratuito sem venda antecipada registrada.'
                     : 'Link externo de ingressos não informado para este registro.'}
@@ -391,19 +406,19 @@ export const EventDetailPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleSave}
-                className={`w-full py-3 px-4 rounded-md border text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors ${
+                className={`w-full py-3 px-4 rounded-xl border text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors ${
                   saved
-                    ? 'border-[#F4F4F2] bg-[#F4F4F2] text-[#080808]'
-                    : 'border-[#292929] hover:border-[#F4F4F2] text-[#F4F4F2]'
+                    ? 'border-[#FF5A36] bg-[#FF5A36]/15 text-[#FF5A36]'
+                    : 'border-[#28282E] bg-[#101012] hover:border-[#F7F7F5]/60 text-[#F7F7F5]'
                 }`}
               >
-                <Bookmark className="w-4 h-4" fill={saved ? 'currentColor' : 'none'} />
+                <Heart className="w-4 h-4" fill={saved ? 'currentColor' : 'none'} />
                 <span>{saved ? 'Salvo nos favoritos' : 'Salvar evento'}</span>
               </button>
 
               <Link
                 to={`/bora-junto?add=${encodeURIComponent(event.id)}`}
-                className="w-full py-3 px-4 rounded-md border border-[#292929] hover:border-[#F4F4F2] text-[#F4F4F2] text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors"
+                className="w-full py-3 px-4 rounded-xl border border-[#28282E] bg-[#101012] hover:border-[#F7F7F5]/60 text-[#F7F7F5] text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors"
               >
                 <Users className="w-4 h-4" />
                 <span>Incluir no Bora Junto</span>
@@ -414,7 +429,7 @@ export const EventDetailPage: React.FC = () => {
                   href={whatsappHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="py-2.5 px-3 rounded-md bg-[#080808] border border-[#292929] hover:border-[#F4F4F2] text-xs font-semibold text-[#F4F4F2] flex items-center justify-center gap-1.5"
+                  className="py-2.5 px-3 rounded-xl bg-[#101012] border border-[#28282E] hover:border-[#F7F7F5]/60 text-xs font-semibold text-[#F7F7F5] flex items-center justify-center gap-1.5 transition-colors"
                 >
                   <Share2 className="w-3.5 h-3.5" />
                   <span>WhatsApp</span>
@@ -422,7 +437,7 @@ export const EventDetailPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleCopyLink}
-                  className="py-2.5 px-3 rounded-md bg-[#080808] border border-[#292929] hover:border-[#F4F4F2] text-xs font-semibold text-[#F4F4F2] flex items-center justify-center gap-1.5"
+                  className="py-2.5 px-3 rounded-xl bg-[#101012] border border-[#28282E] hover:border-[#F7F7F5]/60 text-xs font-semibold text-[#F7F7F5] flex items-center justify-center gap-1.5 transition-colors"
                 >
                   <Copy className="w-3.5 h-3.5" />
                   <span>Copiar link</span>
@@ -435,8 +450,9 @@ export const EventDetailPage: React.FC = () => {
 
       {/* Related Events */}
       {relatedEvents.length > 0 && (
-        <section className="mt-16 pt-10 border-t border-[#292929]">
-          <h2 className="font-display text-3xl font-extrabold italic uppercase tracking-tight text-[#F4F4F2] mb-6">
+        <section className="mt-16 pt-10 border-t border-[#28282E]">
+          <SectionKicker label="Continue explorando" className="mb-2" />
+          <h2 className="font-display text-3xl font-extrabold italic uppercase tracking-tight text-[#F7F7F5] mb-6">
             Outros rolês pela região ou estilo
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">

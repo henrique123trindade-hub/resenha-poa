@@ -401,7 +401,7 @@ service cloud.firestore {
 
       match /votes/{voteId} {
         allow get: if isValidId(listId) && isValidId(voteId);
-        allow list: if isValidId(listId) && resource.data.optionId is string;
+        allow list: if isValidId(listId);
         allow create: if isValidId(listId) &&
           isValidId(voteId) &&
           isValidPollVote(incoming(), voteId) &&
@@ -470,7 +470,7 @@ service cloud.firestore {
 
     match /categories/{categoryId} {
       allow get: if isValidId(categoryId);
-      allow list: if resource.data.active is bool;
+      allow list: if resource.data.active == true || isAdmin();
       allow create, update: if isAdmin() &&
         isValidId(categoryId) &&
         isValidCategory(incoming(), categoryId) &&
@@ -480,7 +480,7 @@ service cloud.firestore {
 
     match /neighborhoods/{neighborhoodId} {
       allow get: if isValidId(neighborhoodId);
-      allow list: if resource.data.active is bool;
+      allow list: if resource.data.active == true || isAdmin();
       allow create, update: if isAdmin() &&
         isValidId(neighborhoodId) &&
         isValidNeighborhood(incoming(), neighborhoodId) &&

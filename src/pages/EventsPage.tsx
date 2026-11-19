@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { LayoutGrid, List, Search, Sparkles, X } from 'lucide-react';
 import { useCatalog } from '../contexts/CatalogContext';
 import { EventCard } from '../components/EventCard';
+import { SectionKicker } from '../components/BrandMark';
 import { filterAndSortEvents } from '../utils/eventFilters';
 import type { AgeRating, EventCategoryId, PriceType, QuickDateFilter } from '../types/resenha';
 
@@ -101,18 +102,16 @@ export const EventsPage: React.FC = () => {
     ageRating !== 'all';
 
   return (
-    <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 text-[#F4F4F2]">
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 pb-6 border-b border-[#292929] mb-8">
+    <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 text-[#F7F7F5]">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 pb-6 border-b border-[#28282E] mb-8">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#858585] mb-2">
-            Agenda Porto Alegre
-          </p>
-          <h1 className="font-display text-4xl sm:text-5xl font-extrabold italic uppercase tracking-tight text-[#F4F4F2]">
+          <SectionKicker label="Agenda Porto Alegre" tone="on-dark" />
+          <h1 className="font-display text-4xl sm:text-5xl font-extrabold italic uppercase tracking-tight text-[#F7F7F5]">
             Eventos e rolês em POA
           </h1>
-          <p className="text-sm sm:text-base text-[#858585] mt-2 max-w-2xl">
+          <p className="text-sm sm:text-base text-[#98989F] mt-2 max-w-2xl">
             {hasRealEvents
-              ? 'Programação em ordem cronológica, com origem transparente e filtros por bairro e faixa etária.'
+              ? 'Programação em ordem cronológica, com origem transparente e filtros por bairro, estilo e faixa etária.'
               : 'Exibindo catálogo de demonstração enquanto organizadores publicam a agenda local.'}
           </p>
         </div>
@@ -123,10 +122,10 @@ export const EventsPage: React.FC = () => {
             onClick={() => setViewMode('grid')}
             aria-label="Visualização em grade"
             aria-pressed={viewMode === 'grid'}
-            className={`px-4 py-2 rounded-md border text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors ${
+            className={`px-4 py-2 rounded-full border text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors ${
               viewMode === 'grid'
-                ? 'bg-[#F4F4F2] border-[#F4F4F2] text-[#080808]'
-                : 'bg-[#141414] border-[#292929] text-[#858585] hover:border-[#F4F4F2] hover:text-[#F4F4F2]'
+                ? 'bg-[#FF5A36] border-[#FF5A36] text-[#101012]'
+                : 'bg-[#1C1C20] border-[#28282E] text-[#98989F] hover:border-[#F7F7F5] hover:text-[#F7F7F5]'
             }`}
           >
             <LayoutGrid className="w-3.5 h-3.5" /> Grade
@@ -136,10 +135,10 @@ export const EventsPage: React.FC = () => {
             onClick={() => setViewMode('list')}
             aria-label="Visualização em lista"
             aria-pressed={viewMode === 'list'}
-            className={`px-4 py-2 rounded-md border text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors ${
+            className={`px-4 py-2 rounded-full border text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors ${
               viewMode === 'list'
-                ? 'bg-[#F4F4F2] border-[#F4F4F2] text-[#080808]'
-                : 'bg-[#141414] border-[#292929] text-[#858585] hover:border-[#F4F4F2] hover:text-[#F4F4F2]'
+                ? 'bg-[#FF5A36] border-[#FF5A36] text-[#101012]'
+                : 'bg-[#1C1C20] border-[#28282E] text-[#98989F] hover:border-[#F7F7F5] hover:text-[#F7F7F5]'
             }`}
           >
             <List className="w-3.5 h-3.5" /> Lista
@@ -147,76 +146,92 @@ export const EventsPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Quick Date Strip */}
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-4 -mx-1 px-1">
+        {(
+          [
+            { id: 'all', label: 'Todas as datas' },
+            { id: 'today', label: 'Hoje' },
+            { id: 'tomorrow', label: 'Amanhã' },
+            { id: 'friday', label: 'Sexta' },
+            { id: 'saturday', label: 'Sábado' },
+            { id: 'sunday', label: 'Domingo' },
+            { id: 'weekend', label: 'Fim de semana' },
+          ] as const
+        ).map((item) => {
+          const active = quickDate === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => updateParam('data', item.id)}
+              className={`px-4 py-2 rounded-full border text-xs font-semibold whitespace-nowrap shrink-0 transition-colors ${
+                active
+                  ? 'bg-[#FF5A36] border-[#FF5A36] text-[#101012]'
+                  : 'bg-[#1C1C20] border-[#28282E] text-[#F7F7F5] hover:border-[#FF5A36]'
+              }`}
+            >
+              {item.label}
+            </button>
+          );
+        })}
+        <button
+          type="button"
+          onClick={() => updateParam('gratis', onlyFree ? null : '1')}
+          aria-pressed={onlyFree}
+          className={`px-4 py-2 rounded-full border text-xs font-semibold whitespace-nowrap shrink-0 transition-colors ${
+            onlyFree
+              ? 'bg-[#D5FF52] border-[#D5FF52] text-[#101012]'
+              : 'bg-[#1C1C20] border-[#28282E] text-[#F7F7F5] hover:border-[#D5FF52]'
+          }`}
+        >
+          Grátis (0800)
+        </button>
+      </div>
+
       {/* Filter Toolbar */}
       <section
         aria-label="Filtros de eventos"
-        className="bg-[#141414] border border-[#292929] rounded-md p-5 sm:p-6 mb-8 space-y-4"
+        className="bg-[#1C1C20] border border-[#28282E] rounded-2xl p-5 sm:p-6 mb-8 space-y-4"
       >
         <div className="flex flex-col md:flex-row gap-3">
           <div className="flex-1 relative">
-            <Search className="w-4 h-4 text-[#858585] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="w-4 h-4 text-[#98989F] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="search"
               value={queryText}
               onChange={(e) => updateParam('q', e.target.value || null)}
               placeholder="Buscar por festa, show, bar, bairro ou frase (ex: samba grátis na Cidade Baixa sexta)..."
               aria-label="Buscar eventos"
-              className="w-full h-11 pl-10 pr-4 bg-[#080808] border border-[#292929] focus:border-[#F4F4F2] rounded-md text-sm text-[#F4F4F2] placeholder:text-[#858585] focus:outline-none"
+              className="w-full h-11 pl-10 pr-4 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none"
             />
           </div>
           <button
             type="button"
             disabled={aiLoading || !queryText.trim()}
             onClick={handleSmartInterpret}
-            className="h-11 px-5 bg-[#F4F4F2] hover:bg-white disabled:opacity-45 text-[#080808] rounded-md text-xs font-bold uppercase tracking-wider inline-flex items-center justify-center gap-2 whitespace-nowrap shrink-0 transition-colors"
+            className="h-11 px-5 bg-[#5265FF] hover:bg-[#6475ff] disabled:opacity-75 disabled:cursor-not-allowed text-white rounded-xl text-xs font-bold uppercase tracking-wider inline-flex items-center justify-center gap-2 whitespace-nowrap shrink-0 transition-colors"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>{aiLoading ? 'Interpretando...' : 'Aplicar busca inteligente'}</span>
           </button>
         </div>
 
-        {aiNote && (
-          <p className="text-xs font-medium text-[#F4F4F2]">
-            Interpretação aplicada: {aiNote}
-          </p>
-        )}
+        {aiNote && <p className="text-xs font-medium text-[#D5FF52]">Interpretação aplicada: {aiNote}</p>}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-          <div>
-            <label
-              htmlFor="filter-date"
-              className="block text-[11px] font-bold uppercase tracking-wider text-[#858585] mb-1.5"
-            >
-              Data
-            </label>
-            <select
-              id="filter-date"
-              value={quickDate}
-              onChange={(e) => updateParam('data', e.target.value)}
-              className="w-full h-10 px-3 bg-[#080808] border border-[#292929] focus:border-[#F4F4F2] rounded-md text-xs font-medium text-[#F4F4F2] focus:outline-none"
-            >
-              <option value="all">Todas as próximas datas</option>
-              <option value="today">Hoje</option>
-              <option value="tomorrow">Amanhã</option>
-              <option value="weekend">Fim de semana</option>
-              <option value="friday">Sexta-feira</option>
-              <option value="saturday">Sábado</option>
-              <option value="sunday">Domingo</option>
-            </select>
-          </div>
-
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div>
             <label
               htmlFor="filter-category"
-              className="block text-[11px] font-bold uppercase tracking-wider text-[#858585] mb-1.5"
+              className="block text-[11px] font-bold uppercase tracking-wider text-[#98989F] mb-1.5"
             >
-              Categoria
+              Estilo / Categoria
             </label>
             <select
               id="filter-category"
               value={category}
               onChange={(e) => updateParam('categoria', e.target.value)}
-              className="w-full h-10 px-3 bg-[#080808] border border-[#292929] focus:border-[#F4F4F2] rounded-md text-xs font-medium text-[#F4F4F2] focus:outline-none"
+              className="w-full h-10 px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-xs font-medium text-[#F7F7F5] focus:outline-none"
             >
               <option value="todos">Todas as categorias</option>
               {categories.map((c) => (
@@ -230,7 +245,7 @@ export const EventsPage: React.FC = () => {
           <div>
             <label
               htmlFor="filter-neighborhood"
-              className="block text-[11px] font-bold uppercase tracking-wider text-[#858585] mb-1.5"
+              className="block text-[11px] font-bold uppercase tracking-wider text-[#98989F] mb-1.5"
             >
               Bairro
             </label>
@@ -238,7 +253,7 @@ export const EventsPage: React.FC = () => {
               id="filter-neighborhood"
               value={neighborhood}
               onChange={(e) => updateParam('bairro', e.target.value)}
-              className="w-full h-10 px-3 bg-[#080808] border border-[#292929] focus:border-[#F4F4F2] rounded-md text-xs font-medium text-[#F4F4F2] focus:outline-none"
+              className="w-full h-10 px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-xs font-medium text-[#F7F7F5] focus:outline-none"
             >
               <option value="todos">Todos os bairros de POA</option>
               {neighborhoods.map((n) => (
@@ -252,7 +267,7 @@ export const EventsPage: React.FC = () => {
           <div>
             <label
               htmlFor="filter-age"
-              className="block text-[11px] font-bold uppercase tracking-wider text-[#858585] mb-1.5"
+              className="block text-[11px] font-bold uppercase tracking-wider text-[#98989F] mb-1.5"
             >
               Classificação etária
             </label>
@@ -260,7 +275,7 @@ export const EventsPage: React.FC = () => {
               id="filter-age"
               value={ageRating}
               onChange={(e) => updateParam('idade', e.target.value)}
-              className="w-full h-10 px-3 bg-[#080808] border border-[#292929] focus:border-[#F4F4F2] rounded-md text-xs font-medium text-[#F4F4F2] focus:outline-none"
+              className="w-full h-10 px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-xs font-medium text-[#F7F7F5] focus:outline-none"
             >
               <option value="all">Todas as faixas</option>
               <option value="under18_safe">Adequado para menores (Livre / 16+)</option>
@@ -270,62 +285,77 @@ export const EventsPage: React.FC = () => {
             </select>
           </div>
 
-          <div className="flex items-end gap-2">
-            <button
-              type="button"
-              onClick={() => updateParam('gratis', onlyFree ? null : '1')}
-              aria-pressed={onlyFree}
-              className={`flex-1 h-10 px-4 rounded-md border text-xs font-bold uppercase tracking-wider transition-colors ${
-                onlyFree
-                  ? 'bg-[#F4F4F2] border-[#F4F4F2] text-[#080808]'
-                  : 'bg-[#080808] border-[#292929] text-[#F4F4F2] hover:border-[#F4F4F2]'
-              }`}
-            >
-              Somente grátis
-            </button>
-            {hasActiveFilters && (
+          <div className="flex items-end">
+            {hasActiveFilters ? (
               <button
                 type="button"
                 onClick={clearAllFilters}
-                aria-label="Limpar todos os filtros"
-                className="h-10 w-10 rounded-md border border-[#292929] hover:border-[#F4F4F2] text-[#858585] hover:text-[#F4F4F2] flex items-center justify-center shrink-0"
+                className="w-full h-10 px-4 rounded-xl border border-[#28282E] hover:border-[#FF5A36] text-xs font-bold uppercase tracking-wider text-[#F7F7F5] inline-flex items-center justify-center gap-1.5 transition-colors"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" /> Limpar filtros
               </button>
+            ) : (
+              <div className="w-full h-10 px-4 rounded-xl border border-[#28282E] bg-[#101012] flex items-center justify-center text-xs font-medium text-[#98989F] tabular-nums">
+                {filteredEvents.length} {filteredEvents.length === 1 ? 'rolê' : 'rolês'}
+              </div>
             )}
           </div>
         </div>
       </section>
 
       {/* Results Header */}
-      <div className="flex items-center justify-between text-xs text-[#858585] mb-5">
+      <div className="flex items-center justify-between text-xs text-[#98989F] mb-5">
         <span className="font-medium tabular-nums">
-          {filteredEvents.length} {filteredEvents.length === 1 ? 'resultado encontrado' : 'resultados encontrados'}
+          {filteredEvents.length}{' '}
+          {filteredEvents.length === 1 ? 'resultado encontrado' : 'resultados encontrados'}
         </span>
       </div>
 
-      {/* Results Grid / List */}
+      {/* Results Grid (Asymmetric Lead Feature Card + 3-Col Posters) or List */}
       {filteredEvents.length === 0 ? (
-        <div className="bg-[#141414] border border-[#292929] rounded-md p-10 text-center space-y-4">
-          <h2 className="font-display text-2xl sm:text-3xl font-bold uppercase text-[#F4F4F2]">
+        <div className="bg-[#1C1C20] border border-[#28282E] rounded-2xl p-10 text-center space-y-4">
+          <h2 className="font-display text-2xl sm:text-3xl font-bold uppercase text-[#F7F7F5]">
             Nenhum evento corresponde aos filtros selecionados
           </h2>
-          <p className="text-sm text-[#858585] max-w-md mx-auto">
+          <p className="text-sm text-[#98989F] max-w-md mx-auto">
             Experimente limpar os filtros ou ampliar para todos os bairros de Porto Alegre.
           </p>
           <button
             type="button"
             onClick={clearAllFilters}
-            className="px-6 py-3 rounded-md bg-[#F4F4F2] hover:bg-white text-[#080808] text-xs font-bold uppercase tracking-wider transition-colors"
+            className="px-6 py-3 rounded-full bg-[#FF5A36] hover:bg-[#FF6F4F] text-[#101012] text-xs font-bold uppercase tracking-wider transition-colors"
           >
             Limpar filtros
           </button>
         </div>
       ) : viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredEvents.map((ev) => (
-            <EventCard key={ev.id} event={ev} layout="poster" />
-          ))}
+        <div className="space-y-6">
+          {filteredEvents.length >= 3 && !hasActiveFilters ? (
+            <>
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+                <div className="lg:col-span-7">
+                  <EventCard event={filteredEvents[0]} layout="feature" />
+                </div>
+                <div className="lg:col-span-5 flex flex-col gap-5">
+                  <EventCard event={filteredEvents[1]} layout="poster" />
+                  <EventCard event={filteredEvents[2]} layout="poster" />
+                </div>
+              </div>
+              {filteredEvents.length > 3 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {filteredEvents.slice(3).map((ev) => (
+                    <EventCard key={ev.id} event={ev} layout="poster" />
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredEvents.map((ev) => (
+                <EventCard key={ev.id} event={ev} layout="poster" />
+              ))}
+            </div>
+          )}
         </div>
       ) : (
         <div className="space-y-4">

@@ -1,13 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  --bg-deep: #080808;
-  --bg-surface: #141414;
-  --bg-elevated: #1E1E1E;
-  --ink-white: #F4F4F2;
-  --ink-muted: #858585;
-  --border-dark: #292929;
-  --border-light: #D8D8D4;
+  /* ResenhaPOA 2.0 — Nightlife Premium Structural Tokens */
+  --bg-deep: #101012;
+  --bg-surface: #1C1C20;
+  --bg-elevated: #25252B;
+  --surface-light: #F7F7F5;
+  --surface-light-muted: #E8E8E6;
+  --ink-white: #F7F7F5;
+  --ink-dark: #101012;
+  --ink-muted: #98989F;
+  --border-dark: #28282E;
+  --border-light: #E2E2DE;
+
+  /* Strategic Vibrant Accents (~10% visual budget) */
+  --accent-orange: #FF5A36;
+  --accent-orange-hover: #FF6F4F;
+  --accent-blue: #5265FF;
+  --accent-lime: #D5FF52;
+  --accent-pink: #F05AA6;
 }
 
 html {
@@ -15,6 +26,7 @@ html {
   background-color: var(--bg-deep);
   color: var(--ink-white);
   font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 body {
@@ -38,14 +50,19 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* Subtle analog film grain texture overlay for editorial photography and hero surfaces */
+/* Subtle analog film grain texture overlay strictly for hero/editorial photo backdrops */
 .film-grain {
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
 }
 
-/* Editorial B&W photo treatment strictly for campaign / demo photography */
+/* High-contrast monochrome treatment reserved strictly for intentionally B&W editorial slots */
 .bw-editorial-photo {
-  filter: grayscale(100%) contrast(1.12) brightness(0.96);
+  filter: grayscale(100%) contrast(1.12) brightness(0.95);
+}
+
+/* Crisp nightlife color treatment that preserves vivid stage illumination */
+.nightlife-color-photo {
+  filter: contrast(1.04) saturate(1.06);
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -54,6 +71,16 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Smooth compositor-only hover lift for interactive editorial cards */
+.card-lift {
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+.card-lift:hover {
+  transform: translateY(-2px);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -66,18 +93,21 @@ body {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
   }
+  .card-lift:hover {
+    transform: none;
+  }
 }
 
 :focus-visible {
-  outline: 2px solid #F4F4F2;
+  outline: 2px solid var(--accent-orange);
   outline-offset: 2px;
 }
 
-/* Monochrome Leaflet dark map overrides (ResenhaPOA Nightlife B&W) */
+/* Monochrome Leaflet dark map overrides (ResenhaPOA 2.0) */
 .resenha-leaflet-map.leaflet-container {
-  background-color: #080808;
+  background-color: #101012;
   font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
-  color: #F4F4F2;
+  color: #F7F7F5;
 }
 
 .resenha-leaflet-map .leaflet-tile-pane {
@@ -85,37 +115,36 @@ body {
 }
 
 .resenha-leaflet-map .leaflet-control-attribution {
-  background: rgba(8, 8, 8, 0.82) !important;
-  color: #858585 !important;
+  background: rgba(16, 16, 18, 0.85) !important;
+  color: #98989F !important;
   font-size: 10px !important;
   padding: 2px 8px !important;
-  border-top-left-radius: 4px;
+  border-top-left-radius: 6px;
 }
 
 .resenha-leaflet-map .leaflet-control-attribution a {
-  color: #B5B5B2 !important;
+  color: #D2D2D8 !important;
 }
 
 .resenha-map-tooltip.leaflet-tooltip {
-  background-color: #141414;
-  color: #F4F4F2;
-  border: 1px solid #292929;
-  border-radius: 4px;
-  padding: 4px 8px;
+  background-color: #1C1C20;
+  color: #F7F7F5;
+  border: 1px solid #28282E;
+  border-radius: 6px;
+  padding: 5px 10px;
   font-family: 'Instrument Sans', system-ui, sans-serif;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.55);
 }
 
 .resenha-map-tooltip.leaflet-tooltip-top::before {
-  border-top-color: #292929;
+  border-top-color: #28282E;
 }
 
 .resenha-pin-icon {
   background: transparent;
   border: none;
 }
-

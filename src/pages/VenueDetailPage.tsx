@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
-  Bookmark,
   Clock,
   ExternalLink,
   Flag,
+  Heart,
   Info,
   MapPin,
   Music,
@@ -16,7 +16,7 @@ import { useCatalog } from '../contexts/CatalogContext';
 import { useAuth } from '../contexts/AuthContext';
 import { CAMPAIGN_PHOTOS } from '../data/seedCatalog';
 import { isVenueOpenNow } from '../utils/datePoa';
-import { getNightlifeSrcSet, isCampaignNightlifePhoto } from '../utils/responsiveImage';
+import { getNightlifeSrcSet } from '../utils/responsiveImage';
 import {
   fetchApprovedVenueReviews,
   submitReport,
@@ -26,6 +26,7 @@ import {
 import type { VenueReviewItem } from '../types/resenha';
 import { PoaMapView } from '../components/PoaMapView';
 import { EventCard } from '../components/EventCard';
+import { SectionKicker } from '../components/BrandMark';
 import { useToast } from '../components/Layout';
 
 export const VenueDetailPage: React.FC = () => {
@@ -64,8 +65,8 @@ export const VenueDetailPage: React.FC = () => {
 
   if (!venue) {
     return (
-      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center space-y-5 text-[#F4F4F2]">
-        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#858585]">
+      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center space-y-5 text-[#F7F7F5]">
+        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#98989F]">
           Local não localizado
         </p>
         <h1 className="font-display text-4xl sm:text-5xl font-extrabold italic uppercase tracking-tight">
@@ -73,7 +74,7 @@ export const VenueDetailPage: React.FC = () => {
         </h1>
         <Link
           to="/bares"
-          className="inline-block px-6 py-3 rounded-md bg-[#F4F4F2] hover:bg-white text-[#080808] text-xs font-bold uppercase tracking-wider transition-colors"
+          className="inline-block px-6 py-3 rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] text-[#101012] text-xs font-extrabold uppercase tracking-wider transition-colors"
         >
           Voltar para guia de bares
         </Link>
@@ -83,8 +84,7 @@ export const VenueDetailPage: React.FC = () => {
 
   const saved = isFavorited('venue', venue.id);
   const openNow = isVenueOpenNow(venue.openingHours, venue.hoursVerified);
-  const heroImg = venue.imageUrl || CAMPAIGN_PHOTOS.galpao;
-  const applyBwTreatment = !venue.imageUrl || venue.isDemoExample || isCampaignNightlifePhoto(heroImg);
+  const heroImg = venue.imageUrl || CAMPAIGN_PHOTOS.warmBar;
 
   const linkedEvents = events.filter(
     (e) =>
@@ -118,8 +118,12 @@ export const VenueDetailPage: React.FC = () => {
       openAuthModal('Entre com sua conta Google para enviar sua avaliação sobre este local.');
       return;
     }
-    if (comment.trim().length < 8) {
-      notify('Escreva um comentário com pelo menos 8 caracteres.');
+    if (venue.isDemoExample) {
+      notify('Este é um bar demonstrativo. Avaliações funcionam em bares reais cadastrados.');
+      return;
+    }
+    if (comment.trim().length < 10) {
+      notify('Escreva um comentário com pelo menos 10 caracteres.');
       return;
     }
     setSubmittingReview(true);
@@ -166,19 +170,19 @@ export const VenueDetailPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 text-[#F4F4F2]">
+    <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 text-[#F7F7F5]">
       <Link
         to="/bares"
-        className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#858585] hover:text-[#F4F4F2] mb-6 transition-colors"
+        className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#98989F] hover:text-[#F7F7F5] mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" /> Voltar para bares
       </Link>
 
       {venue.isDemoExample && (
-        <div className="mb-6 p-4 rounded-md bg-[#141414] border border-[#292929] flex items-center gap-3 text-xs sm:text-sm text-[#858585]">
-          <Info className="w-4 h-4 text-[#F4F4F2] shrink-0" />
+        <div className="mb-6 p-4 rounded-xl bg-[#1C1C20] border border-[#28282E] flex items-center gap-3 text-xs sm:text-sm text-[#98989F]">
+          <Info className="w-4 h-4 text-[#FF5A36] shrink-0" />
           <span>
-            <strong className="text-[#F4F4F2]">Registro de demonstração:</strong> esta ficha de bar
+            <strong className="text-[#F7F7F5]">Registro de demonstração:</strong> esta ficha de bar
             serve para demonstrar a experiência do guia. Horários e avaliações reais aparecem apenas
             em estabelecimentos verificados.
           </span>
@@ -187,49 +191,61 @@ export const VenueDetailPage: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-8 space-y-8">
-          <div className="rounded-md border border-[#292929] bg-[#141414] overflow-hidden">
-            <img
-              src={heroImg}
-              srcSet={getNightlifeSrcSet(heroImg)}
-              sizes="(max-width: 1024px) 100vw, 66vw"
-              alt={venue.name}
-              referrerPolicy="no-referrer"
-              className={`w-full h-[280px] sm:h-[400px] object-cover ${
-                applyBwTreatment ? 'bw-editorial-photo' : ''
-              }`}
-            />
-            <div className="p-6 sm:p-8 space-y-5">
-              <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-[#858585]">
-                <span className="font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-[2px] bg-[#F4F4F2] text-[#080808]">
+          <div className="rounded-2xl border border-[#28282E] bg-[#1C1C20] overflow-hidden">
+            <div className="relative overflow-hidden">
+              <img
+                src={heroImg}
+                srcSet={getNightlifeSrcSet(heroImg)}
+                sizes="(max-width: 1024px) 100vw, 66vw"
+                alt={venue.name}
+                referrerPolicy="no-referrer"
+                className="w-full h-[280px] sm:h-[420px] object-cover nightlife-color-photo"
+              />
+              <div
+                aria-hidden="true"
+                className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#1C1C20] via-[#1C1C20]/35 to-transparent"
+              />
+              <div className="absolute top-4 left-4 flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#101012]/80 backdrop-blur-sm border border-white/15 text-[#F7F7F5]">
                   {venue.category}
                 </span>
-                <span>{venue.neighborhood}</span>
+                {openNow === true && (
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-[#D5FF52] text-[#101012]">
+                    Aberto agora
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="p-6 sm:p-8 space-y-5">
+              <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-[#98989F]">
+                <span className="text-[#F7F7F5] font-semibold">{venue.neighborhood}</span>
                 <span aria-hidden="true">·</span>
-                <span className="font-semibold text-[#F4F4F2]">Faixa {venue.priceRange}</span>
+                <span className="font-semibold text-[#F7F7F5]">Faixa {venue.priceRange}</span>
                 {openNow !== null && (
                   <>
                     <span aria-hidden="true">·</span>
-                    <span className={openNow ? 'text-[#F4F4F2] font-bold' : 'text-[#858585]'}>
+                    <span className={openNow ? 'text-[#D5FF52] font-bold' : 'text-[#98989F]'}>
                       {openNow ? '● Aberto agora' : 'Fechado agora'}
                     </span>
                   </>
                 )}
               </div>
 
-              <h1 className="font-display text-3xl sm:text-5xl font-extrabold italic uppercase tracking-tight text-[#F4F4F2]">
+              <h1 className="font-display text-3xl sm:text-5xl font-extrabold italic uppercase tracking-tight text-[#F7F7F5]">
                 {venue.name}
               </h1>
 
-              <p className="text-sm sm:text-base text-[#F4F4F2]/90 leading-relaxed">
+              <p className="text-sm sm:text-base text-[#F7F7F5]/90 leading-relaxed">
                 {venue.description}
               </p>
 
               {venue.features && venue.features.length > 0 && (
-                <div className="pt-4 border-t border-[#292929] flex flex-wrap gap-2 text-xs text-[#F4F4F2]">
+                <div className="pt-4 border-t border-[#28282E] flex flex-wrap gap-2 text-xs text-[#F7F7F5]">
                   {venue.features.map((feat) => (
                     <span
                       key={feat}
-                      className="px-3 py-1 rounded-[2px] bg-[#080808] border border-[#292929] font-medium"
+                      className="px-3 py-1.5 rounded-full bg-[#101012] border border-[#28282E] font-medium"
                     >
                       {feat}
                     </span>
@@ -237,7 +253,7 @@ export const VenueDetailPage: React.FC = () => {
                 </div>
               )}
 
-              <div className="pt-4 border-t border-[#292929] flex flex-wrap items-center justify-between gap-3 text-xs text-[#858585]">
+              <div className="pt-4 border-t border-[#28282E] flex flex-wrap items-center justify-between gap-3 text-xs text-[#98989F]">
                 <span>
                   Origem dos dados: {venue.sourceName}
                   {venue.lastVerifiedAt ? ` · Atualizado em ${venue.lastVerifiedAt}` : ''}
@@ -245,7 +261,7 @@ export const VenueDetailPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setReportOpen((v) => !v)}
-                  className="inline-flex items-center gap-1.5 hover:text-[#F4F4F2] underline"
+                  className="inline-flex items-center gap-1.5 hover:text-[#F7F7F5] underline"
                 >
                   <Flag className="w-3.5 h-3.5" /> Sugerir correção
                 </button>
@@ -254,26 +270,26 @@ export const VenueDetailPage: React.FC = () => {
               {reportOpen && (
                 <form
                   onSubmit={handleReportSubmit}
-                  className="p-4 rounded-md bg-[#080808] border border-[#292929] space-y-3"
+                  className="p-4 rounded-xl bg-[#101012] border border-[#28282E] space-y-3"
                 >
                   <textarea
                     rows={3}
                     value={reportReason}
                     onChange={(e) => setReportReason(e.target.value)}
                     placeholder="Informe horário atualizado, endereço ou mudança de funcionamento..."
-                    className="w-full rounded-md bg-[#141414] border border-[#292929] p-3 text-sm text-[#F4F4F2] focus:border-[#F4F4F2] focus:outline-none"
+                    className="w-full rounded-xl bg-[#1C1C20] border border-[#28282E] p-3 text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:border-[#FF5A36] focus:outline-none"
                   />
                   <div className="flex justify-end gap-2">
                     <button
                       type="button"
                       onClick={() => setReportOpen(false)}
-                      className="px-4 py-2 text-xs font-semibold text-[#858585] hover:text-[#F4F4F2]"
+                      className="px-4 py-2 text-xs font-semibold text-[#98989F] hover:text-[#F7F7F5]"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 rounded-md bg-[#F4F4F2] text-[#080808] text-xs font-bold uppercase tracking-wider"
+                      className="px-4 py-2 rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] text-[#101012] text-xs font-extrabold uppercase tracking-wider transition-colors"
                     >
                       Enviar correção
                     </button>
@@ -285,9 +301,7 @@ export const VenueDetailPage: React.FC = () => {
 
           {typeof venue.lat === 'number' && typeof venue.lng === 'number' && (
             <div className="space-y-3">
-              <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#858585]">
-                Onde fica
-              </h2>
+              <SectionKicker label="Onde fica" accentColor="#5265FF" />
               <PoaMapView
                 center={{ lat: venue.lat, lng: venue.lng }}
                 zoom={15}
@@ -310,20 +324,21 @@ export const VenueDetailPage: React.FC = () => {
           )}
 
           {/* Moderated Reviews */}
-          <section className="bg-[#141414] border border-[#292929] rounded-md p-6 sm:p-8 space-y-6">
+          <section className="bg-[#1C1C20] border border-[#28282E] rounded-2xl p-6 sm:p-8 space-y-6">
             <div>
-              <h2 className="font-display text-2xl sm:text-3xl font-extrabold italic uppercase text-[#F4F4F2]">
+              <SectionKicker label="Comunidade" className="mb-2" />
+              <h2 className="font-display text-2xl sm:text-3xl font-extrabold italic uppercase text-[#F7F7F5]">
                 Avaliações da comunidade
               </h2>
-              <p className="text-xs text-[#858585] mt-1">
+              <p className="text-xs text-[#98989F] mt-1">
                 Comentários publicados apenas após moderação para evitar avaliações falsas.
               </p>
             </div>
 
             {reviewsLoading ? (
-              <p className="text-xs text-[#858585]">Carregando avaliações...</p>
+              <p className="text-xs text-[#98989F]">Carregando avaliações...</p>
             ) : reviews.length === 0 ? (
-              <p className="text-sm text-[#858585] py-4 border-y border-[#292929]">
+              <p className="text-sm text-[#98989F] py-4 border-y border-[#28282E]">
                 Ainda não há avaliações aprovadas para este local. Compartilhe sua experiência abaixo.
               </p>
             ) : (
@@ -331,15 +346,15 @@ export const VenueDetailPage: React.FC = () => {
                 {reviews.map((rev) => (
                   <div
                     key={rev.id}
-                    className="p-4 rounded-md bg-[#080808] border border-[#292929] space-y-2"
+                    className="p-4 rounded-xl bg-[#101012] border border-[#28282E] space-y-2"
                   >
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-[#F4F4F2]">{rev.authorName}</span>
-                      <span className="inline-flex items-center gap-1 text-[#F4F4F2] font-bold tabular-nums">
+                      <span className="font-semibold text-[#F7F7F5]">{rev.authorName}</span>
+                      <span className="inline-flex items-center gap-1 text-[#FF5A36] font-bold tabular-nums">
                         <Star className="w-3.5 h-3.5 fill-current" /> {rev.rating}/5
                       </span>
                     </div>
-                    <p className="text-sm text-[#858585]">{rev.comment}</p>
+                    <p className="text-sm text-[#98989F]">{rev.comment}</p>
                   </div>
                 ))}
               </div>
@@ -347,7 +362,7 @@ export const VenueDetailPage: React.FC = () => {
 
             <form onSubmit={handleReviewSubmit} className="space-y-3 pt-2">
               <div className="flex flex-wrap items-center gap-3">
-                <label className="text-xs font-bold uppercase tracking-wider text-[#F4F4F2]">
+                <label className="text-xs font-bold uppercase tracking-wider text-[#F7F7F5]">
                   Sua nota:
                 </label>
                 <div className="flex gap-1.5">
@@ -357,10 +372,10 @@ export const VenueDetailPage: React.FC = () => {
                       type="button"
                       onClick={() => setRating(n)}
                       aria-label={`Nota ${n}`}
-                      className={`w-9 h-9 rounded-md border text-xs font-bold transition-colors ${
+                      className={`w-9 h-9 rounded-xl border text-xs font-extrabold transition-colors ${
                         rating >= n
-                          ? 'bg-[#F4F4F2] border-[#F4F4F2] text-[#080808]'
-                          : 'bg-[#080808] border-[#292929] text-[#858585] hover:border-[#F4F4F2]'
+                          ? 'bg-[#FF5A36] border-[#FF5A36] text-[#101012]'
+                          : 'bg-[#101012] border-[#28282E] text-[#98989F] hover:border-[#F7F7F5]/60'
                       }`}
                     >
                       {n}
@@ -373,12 +388,12 @@ export const VenueDetailPage: React.FC = () => {
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="Como foi o som, atendimento e clima do lugar?"
-                className="w-full rounded-md bg-[#080808] border border-[#292929] focus:border-[#F4F4F2] p-3 text-sm text-[#F4F4F2] placeholder:text-[#858585] focus:outline-none"
+                className="w-full rounded-xl bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] p-3 text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none"
               />
               <button
                 type="submit"
                 disabled={submittingReview}
-                className="px-5 py-3 rounded-md bg-[#F4F4F2] hover:bg-white disabled:opacity-60 text-[#080808] text-xs font-bold uppercase tracking-wider transition-colors"
+                className="px-5 py-3 rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] disabled:opacity-60 text-[#101012] text-xs font-extrabold uppercase tracking-wider transition-colors"
               >
                 {submittingReview ? 'Enviando...' : 'Enviar avaliação para moderação'}
               </button>
@@ -388,25 +403,25 @@ export const VenueDetailPage: React.FC = () => {
 
         {/* Sidebar */}
         <aside className="lg:col-span-4 space-y-5">
-          <div className="bg-[#141414] border border-[#292929] rounded-md p-6 space-y-5 sticky top-24">
-            <div className="space-y-4 pb-5 border-b border-[#292929]">
+          <div className="bg-[#1C1C20] border border-[#28282E] rounded-2xl p-6 space-y-5 sticky top-24">
+            <div className="space-y-4 pb-5 border-b border-[#28282E]">
               <div className="flex items-start gap-3">
-                <MapPin className="w-4 h-4 text-[#F4F4F2] shrink-0 mt-1" />
+                <MapPin className="w-4 h-4 text-[#5265FF] shrink-0 mt-1" />
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-[#858585]">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-[#98989F]">
                     Endereço
                   </p>
-                  <p className="text-sm text-[#F4F4F2]">{venue.address}</p>
+                  <p className="text-sm text-[#F7F7F5]">{venue.address}</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <Clock className="w-4 h-4 text-[#F4F4F2] shrink-0 mt-1" />
+                <Clock className="w-4 h-4 text-[#FF5A36] shrink-0 mt-1" />
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-[#858585]">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-[#98989F]">
                     Horários
                   </p>
-                  <p className="text-sm text-[#F4F4F2]">
+                  <p className="text-sm text-[#F7F7F5]">
                     {venue.hoursVerified && venue.hoursSummary
                       ? venue.hoursSummary
                       : 'Horário não confirmado oficialmente'}
@@ -416,12 +431,12 @@ export const VenueDetailPage: React.FC = () => {
 
               {venue.musicStyle && (
                 <div className="flex items-start gap-3">
-                  <Music className="w-4 h-4 text-[#F4F4F2] shrink-0 mt-1" />
+                  <Music className="w-4 h-4 text-[#D5FF52] shrink-0 mt-1" />
                   <div>
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-[#858585]">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-[#98989F]">
                       Som
                     </p>
-                    <p className="text-sm text-[#F4F4F2]">{venue.musicStyle}</p>
+                    <p className="text-sm text-[#F7F7F5]">{venue.musicStyle}</p>
                   </div>
                 </div>
               )}
@@ -431,19 +446,19 @@ export const VenueDetailPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleSave}
-                className={`w-full py-3 px-4 rounded-md border text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors ${
+                className={`w-full py-3 px-4 rounded-xl border text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors ${
                   saved
-                    ? 'border-[#F4F4F2] bg-[#F4F4F2] text-[#080808]'
-                    : 'border-[#292929] hover:border-[#F4F4F2] text-[#F4F4F2]'
+                    ? 'border-[#FF5A36] bg-[#FF5A36]/15 text-[#FF5A36]'
+                    : 'border-[#28282E] bg-[#101012] hover:border-[#F7F7F5]/60 text-[#F7F7F5]'
                 }`}
               >
-                <Bookmark className="w-4 h-4" fill={saved ? 'currentColor' : 'none'} />
+                <Heart className="w-4 h-4" fill={saved ? 'currentColor' : 'none'} />
                 <span>{saved ? 'Bar salvo' : 'Salvar bar'}</span>
               </button>
 
               <Link
                 to={`/bora-junto?addVenue=${encodeURIComponent(venue.id)}`}
-                className="w-full py-3 px-4 rounded-md border border-[#292929] hover:border-[#F4F4F2] text-[#F4F4F2] text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors"
+                className="w-full py-3 px-4 rounded-xl border border-[#28282E] bg-[#101012] hover:border-[#F7F7F5]/60 text-[#F7F7F5] text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors"
               >
                 <Users className="w-4 h-4" />
                 <span>Incluir no Bora Junto</span>
@@ -454,7 +469,7 @@ export const VenueDetailPage: React.FC = () => {
                   href={venue.websiteUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-3 px-4 rounded-md bg-[#F4F4F2] hover:bg-white text-[#080808] font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2 transition-colors"
+                  className="w-full py-3 px-4 rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] text-[#101012] font-extrabold uppercase tracking-wider text-xs flex items-center justify-center gap-2 transition-colors"
                 >
                   <span>Canal oficial</span>
                   <ExternalLink className="w-4 h-4" />
@@ -466,8 +481,9 @@ export const VenueDetailPage: React.FC = () => {
       </div>
 
       {linkedEvents.length > 0 && (
-        <section className="mt-16 pt-10 border-t border-[#292929]">
-          <h2 className="font-display text-3xl font-extrabold italic uppercase tracking-tight text-[#F4F4F2] mb-6">
+        <section className="mt-16 pt-10 border-t border-[#28282E]">
+          <SectionKicker label="Programação na região" className="mb-2" />
+          <h2 className="font-display text-3xl font-extrabold italic uppercase tracking-tight text-[#F7F7F5] mb-6">
             Eventos vinculados ou na região
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">

@@ -1,13 +1,13 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
-  ArrowUpRight,
-  Bookmark,
   Calendar,
   ChevronDown,
+  Heart,
   Home,
   MapPin,
   Menu,
+  Plus,
   Search,
   Shield,
   Sparkles,
@@ -99,24 +99,24 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   };
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `text-xs font-semibold uppercase tracking-[0.08em] whitespace-nowrap shrink-0 transition-colors py-1.5 border-b-2 ${
+    `text-sm font-medium whitespace-nowrap shrink-0 transition-colors py-1.5 border-b-2 ${
       isActive
-        ? 'text-[#F4F4F2] border-[#F4F4F2]'
-        : 'text-[#858585] border-transparent hover:text-[#F4F4F2]'
+        ? 'text-[#F7F7F5] border-[#FF5A36]'
+        : 'text-[#98989F] border-transparent hover:text-[#F7F7F5]'
     }`;
 
   return (
     <ToastContext.Provider value={{ notify }}>
-      <div id="top" className="min-h-screen flex flex-col bg-[#080808] text-[#F4F4F2]">
-        {/* Monochrome Nightlife Header */}
-        <header className="sticky top-0 z-40 bg-[#080808]/95 backdrop-blur-sm text-[#F4F4F2] border-b border-[#292929]">
+      <div id="top" className="min-h-screen flex flex-col bg-[#101012] text-[#F7F7F5]">
+        {/* ResenhaPOA 2.0 Compact Nightlife Header */}
+        <header className="sticky top-0 z-40 bg-[#101012]/95 backdrop-blur-md text-[#F7F7F5] border-b border-[#28282E]">
           <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
-            {/* Left: Brand Logo */}
+            {/* Zone 1: Brand Wordmark */}
             <Link to="/" aria-label="ResenhaPOA, página inicial" className="shrink-0">
               <BrandWordmark size="md" tone="on-dark" />
             </Link>
 
-            {/* Center: Clean Editorial Navigation */}
+            {/* Zone 2: Clean Single-Line Editorial Navigation */}
             <nav
               className="hidden lg:flex items-center gap-7"
               aria-label="Navegação principal"
@@ -131,112 +131,123 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 Bares
               </NavLink>
 
-              {/* Explore Dropdown */}
+              {/* Explorar Dropdown */}
               <div className="relative" ref={exploreRef}>
                 <button
                   type="button"
                   onClick={() => setExploreOpen((v) => !v)}
                   aria-expanded={exploreOpen}
-                  className={`inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.08em] py-1.5 border-b-2 transition-colors whitespace-nowrap shrink-0 ${
+                  className={`inline-flex items-center gap-1 text-sm font-medium py-1.5 border-b-2 transition-colors whitespace-nowrap shrink-0 ${
                     exploreOpen
-                      ? 'text-[#F4F4F2] border-[#F4F4F2]'
-                      : 'text-[#858585] border-transparent hover:text-[#F4F4F2]'
+                      ? 'text-[#F7F7F5] border-[#FF5A36]'
+                      : 'text-[#98989F] border-transparent hover:text-[#F7F7F5]'
                   }`}
                 >
-                  <span>Explore</span>
+                  <span>Explorar</span>
                   <ChevronDown
-                    className={`w-3.5 h-3.5 transition-transform duration-150 ${exploreOpen ? 'rotate-180' : ''}`}
+                    className={`w-4 h-4 transition-transform duration-150 ${exploreOpen ? 'rotate-180 text-[#FF5A36]' : ''}`}
                   />
                 </button>
 
                 {exploreOpen && (
-                  <div className="absolute left-0 top-full mt-3 w-64 bg-[#141414] text-[#F4F4F2] border border-[#292929] rounded-md shadow-2xl p-2 z-50">
+                  <div className="absolute left-0 top-full mt-3 w-72 bg-[#1C1C20] text-[#F7F7F5] border border-[#28282E] rounded-xl shadow-2xl p-2 z-50">
                     <Link
                       to="/mapa"
-                      className="flex items-start gap-3 p-2.5 rounded hover:bg-[#1E1E1E] transition-colors"
+                      className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-[#25252B] transition-colors"
                     >
-                      <MapPin className="w-4 h-4 text-[#F4F4F2] shrink-0 mt-0.5" />
+                      <MapPin className="w-4 h-4 text-[#5265FF] shrink-0 mt-0.5" />
                       <div>
                         <span className="block text-sm font-semibold">Mapa de rolês</span>
-                        <span className="block text-xs text-[#858585]">
-                          Festas e bares perto de ti
+                        <span className="block text-xs text-[#98989F]">
+                          Festas e bares perto de ti em POA
                         </span>
                       </div>
                     </Link>
                     <Link
                       to="/bora-junto"
-                      className="flex items-start gap-3 p-2.5 rounded hover:bg-[#1E1E1E] transition-colors"
+                      className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-[#25252B] transition-colors"
                     >
-                      <Users className="w-4 h-4 text-[#F4F4F2] shrink-0 mt-0.5" />
+                      <Users className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" />
                       <div>
                         <span className="block text-sm font-semibold">Bora Junto</span>
-                        <span className="block text-xs text-[#858585]">
+                        <span className="block text-xs text-[#98989F]">
                           Crie listas para votar com a galera
                         </span>
                       </div>
                     </Link>
                     <Link
                       to="/curadoria"
-                      className="flex items-start gap-3 p-2.5 rounded hover:bg-[#1E1E1E] transition-colors"
+                      className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-[#25252B] transition-colors"
                     >
-                      <Sparkles className="w-4 h-4 text-[#F4F4F2] shrink-0 mt-0.5" />
+                      <Sparkles className="w-4 h-4 text-[#D5FF52] shrink-0 mt-0.5" />
                       <div>
                         <span className="block text-sm font-semibold">Curadoria inteligente</span>
-                        <span className="block text-xs text-[#858585]">
+                        <span className="block text-xs text-[#98989F]">
                           Busque rolês e monte roteiros
                         </span>
                       </div>
                     </Link>
-                    <div className="my-1.5 border-t border-[#292929]" />
+                    <div className="my-1.5 border-t border-[#28282E]" />
                     <Link
                       to="/sobre"
-                      className="block px-3 py-2 rounded text-xs font-medium text-[#858585] hover:text-[#F4F4F2] hover:bg-[#1E1E1E]"
+                      className="block px-3 py-2 rounded-lg text-xs font-medium text-[#98989F] hover:text-[#F7F7F5] hover:bg-[#25252B]"
                     >
                       Sobre o ResenhaPOA
                     </Link>
                   </div>
                 )}
               </div>
-
-              <NavLink to="/favoritos" className={navLinkClass}>
-                <span>Favoritos</span>
-                {favorites.length > 0 && (
-                  <span className="ml-1.5 text-[11px] text-[#858585] tabular-nums">
-                    ({favorites.length})
-                  </span>
-                )}
-              </NavLink>
             </nav>
 
-            {/* Right: Search, Account, White Primary CTA */}
-            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* Zone 3: Compact Utility Icons + Single Primary Action */}
+            <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
               <button
                 type="button"
                 onClick={() => setSearchOpen((v) => !v)}
                 aria-label="Abrir pesquisa rápida"
                 aria-expanded={searchOpen}
-                className="w-9 h-9 rounded-md flex items-center justify-center text-[#F4F4F2] hover:bg-[#141414] transition-colors"
+                className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
+                  searchOpen
+                    ? 'bg-[#25252B] text-[#FF5A36]'
+                    : 'bg-[#1C1C20] text-[#F7F7F5] hover:bg-[#25252B]'
+                }`}
               >
                 <Search className="w-4 h-4" />
               </button>
+
+              <Link
+                to="/favoritos"
+                aria-label={
+                  favorites.length > 0 ? `Favoritos (${favorites.length} salvos)` : 'Favoritos'
+                }
+                className="hidden sm:inline-flex relative w-9 h-9 rounded-full bg-[#1C1C20] hover:bg-[#25252B] text-[#F7F7F5] items-center justify-center transition-colors"
+              >
+                <Heart
+                  className={`w-4 h-4 ${favorites.length > 0 ? 'text-[#FF5A36]' : 'text-[#F7F7F5]'}`}
+                  fill={favorites.length > 0 ? 'currentColor' : 'none'}
+                />
+                {favorites.length > 0 && (
+                  <span className="sr-only">({favorites.length})</span>
+                )}
+              </Link>
 
               {user ? (
                 <Link
                   to="/perfil"
                   aria-label="Minha conta"
-                  className="hidden sm:inline-flex items-center gap-2 text-xs font-semibold px-2.5 h-9 rounded-md text-[#F4F4F2] hover:bg-[#141414] transition-colors whitespace-nowrap shrink-0"
+                  className="hidden sm:inline-flex items-center gap-2 text-xs font-semibold px-2.5 h-9 rounded-full bg-[#1C1C20] hover:bg-[#25252B] text-[#F7F7F5] transition-colors whitespace-nowrap shrink-0"
                 >
                   {user.photoURL ? (
                     <img
                       src={user.photoURL}
                       alt={user.displayName || 'Conta'}
                       referrerPolicy="no-referrer"
-                      className="w-5 h-5 rounded-full object-cover grayscale"
+                      className="w-5 h-5 rounded-full object-cover"
                     />
                   ) : (
                     <UserIcon className="w-4 h-4" />
                   )}
-                  <span className="max-w-[84px] truncate">
+                  <span className="max-w-[76px] truncate">
                     {(user.displayName || 'Conta').split(' ')[0]}
                   </span>
                 </Link>
@@ -245,19 +256,18 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   type="button"
                   onClick={() => openAuthModal('Entre para salvar rolês e criar listas Bora Junto.')}
                   aria-label="Entrar na conta"
-                  className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 h-9 rounded-md text-[#F4F4F2] hover:bg-[#141414] transition-colors whitespace-nowrap shrink-0"
+                  className="hidden sm:inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#1C1C20] hover:bg-[#25252B] text-[#F7F7F5] transition-colors shrink-0"
                 >
                   <UserIcon className="w-4 h-4" />
-                  <span>Conta</span>
                 </button>
               )}
 
               <Link
                 to="/organizador"
-                className="hidden md:inline-flex items-center gap-1.5 bg-[#F4F4F2] hover:bg-white text-[#080808] font-bold text-xs uppercase tracking-[0.06em] px-4 h-9 rounded-md transition-colors whitespace-nowrap shrink-0"
+                className="hidden md:inline-flex items-center gap-1.5 bg-[#FF5A36] hover:bg-[#FF6F4F] text-[#101012] font-bold text-xs tracking-wide px-4 h-9 rounded-full transition-colors whitespace-nowrap shrink-0"
               >
-                <span>Divulgar evento</span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
+                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                <span>Divulgar Evento</span>
               </Link>
 
               <button
@@ -265,33 +275,33 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 onClick={() => setMobileMenuOpen((v) => !v)}
                 aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
                 aria-expanded={mobileMenuOpen}
-                className="lg:hidden w-10 h-10 rounded-md flex items-center justify-center text-[#F4F4F2] hover:bg-[#141414]"
+                className="lg:hidden w-10 h-10 rounded-full flex items-center justify-center text-[#F7F7F5] bg-[#1C1C20] hover:bg-[#25252B]"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
           </div>
 
-          {/* Inline Search Bar */}
+          {/* Inline Search Drawer */}
           {searchOpen && (
-            <div className="border-t border-[#292929] bg-[#141414]">
+            <div className="border-t border-[#28282E] bg-[#1C1C20]">
               <form
                 onSubmit={handleQuickSearch}
                 className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-3"
               >
-                <Search className="w-4 h-4 text-[#858585] shrink-0" />
+                <Search className="w-4 h-4 text-[#98989F] shrink-0" />
                 <input
                   type="search"
                   value={quickQuery}
                   onChange={(e) => setQuickQuery(e.target.value)}
-                  placeholder="Buscar evento, bar ou bairro..."
-                  aria-label="Buscar evento, bar ou bairro"
+                  placeholder="Buscar festas, bares, artistas ou bairros de POA..."
+                  aria-label="Buscar eventos e bares em Porto Alegre"
                   autoFocus
-                  className="flex-1 bg-transparent text-sm text-[#F4F4F2] placeholder:text-[#858585] focus:outline-none py-1.5"
+                  className="flex-1 bg-transparent text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none py-1.5"
                 />
                 <button
                   type="submit"
-                  className="bg-[#F4F4F2] hover:bg-white text-[#080808] font-bold text-xs uppercase tracking-wider px-4 py-2 rounded-md whitespace-nowrap shrink-0"
+                  className="bg-[#FF5A36] hover:bg-[#FF6F4F] text-[#101012] font-bold text-xs px-4 py-2 rounded-full whitespace-nowrap shrink-0 transition-colors"
                 >
                   Buscar
                 </button>
@@ -301,61 +311,60 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
           {/* Mobile Drawer */}
           {mobileMenuOpen && (
-            <div className="lg:hidden border-t border-[#292929] bg-[#141414] px-4 py-5 space-y-4">
+            <div className="lg:hidden border-t border-[#28282E] bg-[#1C1C20] px-4 py-5 space-y-4">
               <nav className="grid grid-cols-2 gap-2.5" aria-label="Menu mobile">
                 <Link
                   to="/eventos"
-                  className="px-3.5 py-3 rounded-md bg-[#080808] border border-[#292929] text-xs font-bold uppercase tracking-wider text-[#F4F4F2]"
+                  className="px-3.5 py-3 rounded-xl bg-[#101012] border border-[#28282E] text-xs font-semibold text-[#F7F7F5] flex items-center gap-2"
                 >
-                  Eventos
+                  <Calendar className="w-4 h-4 text-[#FF5A36]" /> Eventos
                 </Link>
                 <Link
                   to="/bares"
-                  className="px-3.5 py-3 rounded-md bg-[#080808] border border-[#292929] text-xs font-bold uppercase tracking-wider text-[#F4F4F2]"
+                  className="px-3.5 py-3 rounded-xl bg-[#101012] border border-[#28282E] text-xs font-semibold text-[#F7F7F5] flex items-center gap-2"
                 >
-                  Bares
+                  <Wine className="w-4 h-4 text-[#FF5A36]" /> Bares
                 </Link>
                 <Link
                   to="/mapa"
-                  className="px-3.5 py-3 rounded-md bg-[#080808] border border-[#292929] text-xs font-bold uppercase tracking-wider text-[#F4F4F2] flex items-center gap-2"
+                  className="px-3.5 py-3 rounded-xl bg-[#101012] border border-[#28282E] text-xs font-semibold text-[#F7F7F5] flex items-center gap-2"
                 >
-                  <MapPin className="w-4 h-4 text-[#858585]" /> Mapa
+                  <MapPin className="w-4 h-4 text-[#5265FF]" /> Mapa
                 </Link>
                 <Link
                   to="/bora-junto"
-                  className="px-3.5 py-3 rounded-md bg-[#080808] border border-[#292929] text-xs font-bold uppercase tracking-wider text-[#F4F4F2] flex items-center gap-2"
+                  className="px-3.5 py-3 rounded-xl bg-[#101012] border border-[#28282E] text-xs font-semibold text-[#F7F7F5] flex items-center gap-2"
                 >
-                  <Users className="w-4 h-4 text-[#858585]" /> Bora Junto
+                  <Users className="w-4 h-4 text-[#FF5A36]" /> Bora Junto
                 </Link>
                 <Link
                   to="/curadoria"
-                  className="px-3.5 py-3 rounded-md bg-[#080808] border border-[#292929] text-xs font-bold uppercase tracking-wider text-[#F4F4F2] flex items-center gap-2"
+                  className="px-3.5 py-3 rounded-xl bg-[#101012] border border-[#28282E] text-xs font-semibold text-[#F7F7F5] flex items-center gap-2"
                 >
-                  <Sparkles className="w-4 h-4 text-[#858585]" /> Curadoria
+                  <Sparkles className="w-4 h-4 text-[#D5FF52]" /> Curadoria
                 </Link>
                 <Link
                   to="/organizador"
-                  className="px-3.5 py-3 rounded-md bg-[#F4F4F2] text-xs font-bold uppercase tracking-wider text-[#080808] flex items-center justify-between"
+                  className="px-3.5 py-3 rounded-xl bg-[#FF5A36] text-xs font-bold text-[#101012] flex items-center justify-center gap-1.5"
                 >
-                  <span>Divulgar</span>
-                  <ArrowUpRight className="w-3.5 h-3.5" />
+                  <Plus className="w-4 h-4 stroke-[2.5]" /> Divulgar Evento
                 </Link>
               </nav>
 
-              <div className="pt-3 border-t border-[#292929] flex items-center justify-between gap-3">
+              <div className="pt-3 border-t border-[#28282E] flex items-center justify-between gap-3">
                 {user ? (
                   <>
                     <Link
                       to="/perfil"
-                      className="text-sm font-medium text-[#F4F4F2] flex items-center gap-2"
+                      className="text-sm font-medium text-[#F7F7F5] flex items-center gap-2"
                     >
-                      <UserIcon className="w-4 h-4 text-[#858585]" />
+                      <UserIcon className="w-4 h-4 text-[#98989F]" />
                       {user.displayName || user.email}
                     </Link>
                     <button
                       type="button"
                       onClick={() => void logout()}
-                      className="text-xs text-[#858585] underline"
+                      className="text-xs text-[#98989F] hover:text-[#F7F7F5] underline"
                     >
                       Sair
                     </button>
@@ -367,7 +376,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                       setMobileMenuOpen(false);
                       openAuthModal('Entre com sua conta Google para salvar favoritos e enviar eventos.');
                     }}
-                    className="w-full py-2.5 rounded-md border border-[#292929] text-[#F4F4F2] text-xs font-bold uppercase tracking-wider"
+                    className="w-full py-2.5 rounded-xl border border-[#28282E] bg-[#101012] text-[#F7F7F5] text-xs font-bold"
                   >
                     Entrar com Google
                   </button>
@@ -377,7 +386,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               {isAdmin && (
                 <Link
                   to="/admin"
-                  className="block px-3.5 py-2.5 rounded-md bg-[#080808] border border-[#F4F4F2]/40 text-xs font-bold uppercase tracking-wider text-[#F4F4F2]"
+                  className="block px-3.5 py-2.5 rounded-xl bg-[#101012] border border-[#FF5A36]/50 text-xs font-bold text-[#F7F7F5]"
                 >
                   Painel Administrativo
                 </Link>
@@ -392,14 +401,14 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         {/* Mobile Bottom Navigation */}
         <nav
           aria-label="Navegação rápida mobile"
-          className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#080808]/95 backdrop-blur-sm border-t border-[#292929] grid grid-cols-5 h-14 pb-[env(safe-area-inset-bottom)]"
+          className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#101012]/95 backdrop-blur-md border-t border-[#28282E] grid grid-cols-5 h-14 pb-[env(safe-area-inset-bottom)]"
         >
           <NavLink
             to="/"
             end
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide ${
-                isActive ? 'text-[#F4F4F2]' : 'text-[#858585]'
+              `flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide transition-colors ${
+                isActive ? 'text-[#FF5A36]' : 'text-[#98989F]'
               }`
             }
           >
@@ -409,8 +418,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           <NavLink
             to="/eventos"
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide ${
-                isActive ? 'text-[#F4F4F2]' : 'text-[#858585]'
+              `flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide transition-colors ${
+                isActive ? 'text-[#FF5A36]' : 'text-[#98989F]'
               }`
             }
           >
@@ -420,8 +429,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           <NavLink
             to="/bares"
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide ${
-                isActive ? 'text-[#F4F4F2]' : 'text-[#858585]'
+              `flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide transition-colors ${
+                isActive ? 'text-[#FF5A36]' : 'text-[#98989F]'
               }`
             }
           >
@@ -431,8 +440,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           <NavLink
             to="/mapa"
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide ${
-                isActive ? 'text-[#F4F4F2]' : 'text-[#858585]'
+              `flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide transition-colors ${
+                isActive ? 'text-[#5265FF]' : 'text-[#98989F]'
               }`
             }
           >
@@ -442,57 +451,57 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           <NavLink
             to={user ? '/perfil' : '/favoritos'}
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide ${
-                isActive ? 'text-[#F4F4F2]' : 'text-[#858585]'
+              `flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide transition-colors ${
+                isActive ? 'text-[#FF5A36]' : 'text-[#98989F]'
               }`
             }
           >
-            {user ? <UserIcon className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
-            <span>{user ? 'Perfil' : 'Favoritos'}</span>
+            {user ? <UserIcon className="w-4 h-4" /> : <Heart className="w-4 h-4" />}
+            <span>{user ? 'Perfil' : 'Salvos'}</span>
           </NavLink>
         </nav>
 
-        {/* Monochrome Footer */}
-        <footer className="bg-[#080808] text-[#F4F4F2] pt-14 pb-24 lg:pb-12 border-t border-[#292929]">
+        {/* Nightlife Editorial Footer */}
+        <footer className="bg-[#101012] text-[#F7F7F5] pt-14 pb-24 lg:pb-12 border-t border-[#28282E]">
           <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-[#292929]">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-[#28282E]">
               <div className="md:col-span-5 space-y-4">
                 <Link to="/" className="inline-block">
                   <BrandWordmark size="lg" tone="on-dark" />
                 </Link>
-                <p className="text-sm text-[#858585] max-w-md leading-relaxed">
-                  O teu próximo rolê começa aqui. Guia editorial independente para descobrir
-                  festas, baladas, bares, shows e cultura urbana em Porto Alegre.
+                <p className="text-sm text-[#98989F] max-w-md leading-relaxed">
+                  O teu próximo rolê começa aqui. Plataforma independente para descobrir festas,
+                  baladas, bares, shows e cultura urbana em Porto Alegre.
                 </p>
               </div>
 
               <div className="md:col-span-3 space-y-3">
-                <h2 className="font-label text-xs font-bold uppercase tracking-[0.12em] text-[#F4F4F2]">
+                <h2 className="font-label text-xs font-bold uppercase tracking-[0.12em] text-[#F7F7F5]">
                   Descobrir
                 </h2>
-                <ul className="space-y-2.5 text-sm text-[#858585]">
+                <ul className="space-y-2.5 text-sm text-[#98989F]">
                   <li>
-                    <Link to="/eventos" className="hover:text-[#F4F4F2] transition-colors">
+                    <Link to="/eventos" className="hover:text-[#F7F7F5] transition-colors">
                       Eventos em Porto Alegre
                     </Link>
                   </li>
                   <li>
-                    <Link to="/bares" className="hover:text-[#F4F4F2] transition-colors">
+                    <Link to="/bares" className="hover:text-[#F7F7F5] transition-colors">
                       Bares para conhecer
                     </Link>
                   </li>
                   <li>
-                    <Link to="/mapa" className="hover:text-[#F4F4F2] transition-colors">
+                    <Link to="/mapa" className="hover:text-[#F7F7F5] transition-colors">
                       Mapa interativo
                     </Link>
                   </li>
                   <li>
-                    <Link to="/bora-junto" className="hover:text-[#F4F4F2] transition-colors">
+                    <Link to="/bora-junto" className="hover:text-[#F7F7F5] transition-colors">
                       Bora Junto com amigos
                     </Link>
                   </li>
                   <li>
-                    <Link to="/curadoria" className="hover:text-[#F4F4F2] transition-colors">
+                    <Link to="/curadoria" className="hover:text-[#F7F7F5] transition-colors">
                       Curadoria inteligente
                     </Link>
                   </li>
@@ -500,34 +509,34 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               </div>
 
               <div className="md:col-span-4 space-y-3">
-                <h2 className="font-label text-xs font-bold uppercase tracking-[0.12em] text-[#F4F4F2]">
+                <h2 className="font-label text-xs font-bold uppercase tracking-[0.12em] text-[#F7F7F5]">
                   Cena e transparência
                 </h2>
-                <ul className="space-y-2.5 text-sm text-[#858585]">
+                <ul className="space-y-2.5 text-sm text-[#98989F]">
                   <li>
-                    <Link to="/organizador" className="hover:text-[#F4F4F2] transition-colors">
+                    <Link to="/organizador" className="hover:text-[#FF5A36] transition-colors">
                       Divulgar meu evento
                     </Link>
                   </li>
                   <li>
-                    <Link to="/sobre" className="hover:text-[#F4F4F2] transition-colors">
+                    <Link to="/sobre" className="hover:text-[#F7F7F5] transition-colors">
                       Sobre o ResenhaPOA
                     </Link>
                   </li>
                   <li>
-                    <Link to="/privacidade" className="hover:text-[#F4F4F2] transition-colors">
+                    <Link to="/privacidade" className="hover:text-[#F7F7F5] transition-colors">
                       Privacidade (LGPD)
                     </Link>
                   </li>
                   <li>
-                    <Link to="/termos" className="hover:text-[#F4F4F2] transition-colors">
+                    <Link to="/termos" className="hover:text-[#F7F7F5] transition-colors">
                       Termos de uso
                     </Link>
                   </li>
                   <li>
                     <Link
                       to="/politica-de-conteudo"
-                      className="hover:text-[#F4F4F2] transition-colors"
+                      className="hover:text-[#F7F7F5] transition-colors"
                     >
                       Política de conteúdo e classificação etária
                     </Link>
@@ -536,7 +545,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     <li>
                       <Link
                         to="/admin"
-                        className="inline-flex items-center gap-1.5 text-[#F4F4F2] hover:underline"
+                        className="inline-flex items-center gap-1.5 text-[#FF5A36] hover:underline"
                       >
                         <Shield className="w-3.5 h-3.5" /> Painel Administrativo
                       </Link>
@@ -546,12 +555,12 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               </div>
             </div>
 
-            <div className="pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-[#858585]">
+            <div className="pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-[#98989F]">
               <span>ResenhaPOA · Porto Alegre — RS</span>
               <a
                 href="#top"
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="text-[#F4F4F2] hover:underline"
+                className="text-[#F7F7F5] hover:text-[#FF5A36] transition-colors"
               >
                 Voltar ao topo ↑
               </a>
@@ -559,40 +568,40 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           </div>
         </footer>
 
-        {/* Monochrome Auth Modal */}
+        {/* Auth Modal */}
         {authModalOpen && (
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="auth-modal-title"
-            className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4"
           >
-            <div className="max-w-md w-full bg-[#141414] text-[#F4F4F2] border border-[#292929] rounded-lg p-6 sm:p-8 relative shadow-2xl">
+            <div className="max-w-md w-full bg-[#1C1C20] text-[#F7F7F5] border border-[#28282E] rounded-2xl p-6 sm:p-8 relative shadow-2xl">
               <button
                 type="button"
                 onClick={closeAuthModal}
                 aria-label="Fechar janela de login"
-                className="absolute right-4 top-4 w-9 h-9 rounded-md flex items-center justify-center border border-[#292929] hover:border-[#F4F4F2] text-[#858585] hover:text-[#F4F4F2]"
+                className="absolute right-4 top-4 w-9 h-9 rounded-full flex items-center justify-center border border-[#28282E] hover:border-[#F7F7F5] text-[#98989F] hover:text-[#F7F7F5] transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
 
-              <p className="font-label text-[11px] font-bold uppercase tracking-[0.14em] text-[#858585] mb-2">
+              <p className="font-label text-[11px] font-bold uppercase tracking-[0.14em] text-[#FF5A36] mb-2">
                 Conta ResenhaPOA
               </p>
               <h2
                 id="auth-modal-title"
-                className="font-display text-3xl font-extrabold uppercase tracking-tight mb-3"
+                className="font-display text-3xl font-extrabold italic uppercase tracking-tight mb-3"
               >
                 Entre com sua conta Google
               </h2>
-              <p className="text-sm text-[#858585] leading-relaxed mb-6">
+              <p className="text-sm text-[#98989F] leading-relaxed mb-6">
                 {authPromptReason ||
                   'A navegação é livre. Entre apenas para salvar favoritos, criar enquetes Bora Junto ou divulgar eventos.'}
               </p>
 
               {authError && (
-                <div className="mb-4 p-3 rounded border border-[#F4F4F2]/40 bg-[#080808] text-xs text-[#F4F4F2]">
+                <div className="mb-4 p-3 rounded-xl border border-[#FF5A36]/50 bg-[#101012] text-xs text-[#F7F7F5]">
                   {authError}
                 </div>
               )}
@@ -601,12 +610,12 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 type="button"
                 disabled={authLoading}
                 onClick={handleGoogleSignIn}
-                className="w-full py-3.5 px-5 bg-[#F4F4F2] hover:bg-white disabled:opacity-60 text-[#080808] font-bold text-xs uppercase tracking-wider rounded-md transition-colors"
+                className="w-full py-3.5 px-5 bg-[#FF5A36] hover:bg-[#FF6F4F] disabled:opacity-60 text-[#101012] font-bold text-xs uppercase tracking-wider rounded-xl transition-colors"
               >
                 {authLoading ? 'Conectando...' : 'Continuar com Google'}
               </button>
 
-              <p className="mt-4 text-xs text-[#858585] leading-relaxed">
+              <p className="mt-4 text-xs text-[#98989F] leading-relaxed">
                 Seus dados seguem a LGPD e servem apenas para manter seus rolês salvos, listas e
                 publicações.
               </p>
@@ -619,7 +628,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           <div
             role="status"
             aria-live="polite"
-            className="fixed bottom-16 lg:bottom-6 right-4 sm:right-6 z-50 bg-[#F4F4F2] text-[#080808] border border-[#080808] rounded-md font-semibold text-xs px-5 py-3 shadow-xl"
+            className="fixed bottom-16 lg:bottom-6 right-4 sm:right-6 z-50 bg-[#F7F7F5] text-[#101012] border border-[#101012]/10 rounded-xl font-semibold text-xs px-5 py-3 shadow-2xl"
           >
             {toastMsg}
           </div>
