@@ -306,7 +306,7 @@ export const OrganizerPage: React.FC = () => {
   }
 
   const inputClass =
-    'w-full h-11 px-3.5 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none';
+    'w-full min-w-0 h-12 sm:h-11 px-4 sm:px-3.5 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-base sm:text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none';
   const labelClass =
     'block text-[11px] font-bold uppercase tracking-wider text-[#98989F] mb-1.5';
 
@@ -559,7 +559,7 @@ export const OrganizerPage: React.FC = () => {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Conte o estilo do evento, regras da casa, horário de abertura e informações úteis..."
-                className="w-full p-3.5 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none"
+                className="w-full min-w-0 p-4 sm:p-3.5 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-base sm:text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none"
               />
             </div>
           </div>
@@ -637,7 +637,7 @@ export const OrganizerPage: React.FC = () => {
                 rows={3}
                 value={orgBio}
                 onChange={(e) => setOrgBio(e.target.value)}
-                className="w-full p-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-sm text-[#F7F7F5] focus:outline-none"
+                className="w-full min-w-0 p-3.5 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-base sm:text-sm text-[#F7F7F5] focus:outline-none"
               />
             </div>
             <button

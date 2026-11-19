@@ -127,7 +127,8 @@ export const VenuesPage: React.FC = () => {
             onChange={(e) => updateParam('q', e.target.value || null)}
             placeholder="Buscar bar, estilo de som, ambiente ou bairro..."
             aria-label="Buscar bares"
-            className="w-full h-11 pl-10 pr-4 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none"
+            enterKeyHint="search"
+            className="w-full min-w-0 h-12 sm:h-11 pl-10 pr-4 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-base sm:text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none"
           />
         </div>
 
@@ -143,7 +144,7 @@ export const VenuesPage: React.FC = () => {
               id="bar-categoria"
               value={category}
               onChange={(e) => updateParam('categoria', e.target.value)}
-              className="w-full h-10 px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-xs font-medium text-[#F7F7F5] focus:outline-none"
+              className="w-full min-w-0 h-11 sm:h-10 px-3.5 sm:px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-base sm:text-xs font-medium text-[#F7F7F5] focus:outline-none"
             >
               <option value="todos">Todas</option>
               {uniqueCategories.map((c) => (
@@ -165,7 +166,7 @@ export const VenuesPage: React.FC = () => {
               id="bar-ambiente"
               value={environmentType}
               onChange={(e) => updateParam('ambiente', e.target.value)}
-              className="w-full h-10 px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-xs font-medium text-[#F7F7F5] focus:outline-none"
+              className="w-full min-w-0 h-11 sm:h-10 px-3.5 sm:px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-base sm:text-xs font-medium text-[#F7F7F5] focus:outline-none"
             >
               <option value="todos">Todos os ambientes</option>
               {uniqueEnvironments.map((env) => (
@@ -187,7 +188,7 @@ export const VenuesPage: React.FC = () => {
               id="bar-faixa"
               value={priceRange}
               onChange={(e) => updateParam('faixa', e.target.value)}
-              className="w-full h-10 px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-xs font-medium text-[#F7F7F5] focus:outline-none"
+              className="w-full min-w-0 h-11 sm:h-10 px-3.5 sm:px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-base sm:text-xs font-medium text-[#F7F7F5] focus:outline-none"
             >
               <option value="todos">Qualquer faixa</option>
               <option value="$">$ (Econômico)</option>

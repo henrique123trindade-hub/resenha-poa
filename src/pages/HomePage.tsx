@@ -12,6 +12,7 @@ import {
   MapPin,
   Mic2,
   Music,
+  RefreshCw,
   Search,
   Sparkles,
   Tag,
@@ -21,9 +22,11 @@ import {
 } from 'lucide-react';
 import { useCatalog } from '../contexts/CatalogContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../components/Layout';
 import { CAMPAIGN_PHOTOS } from '../data/seedCatalog';
 import { EventCard } from '../components/EventCard';
 import { EventCardReveal } from '../components/EventCardReveal';
+import { PullToRefresh } from '../components/PullToRefresh';
 import { VenueCard } from '../components/VenueCard';
 import { VibeDiscoverySection } from '../components/VibeDiscoverySection';
 import { PoaMapView, type MapMarkerItem } from '../components/PoaMapView';
@@ -135,9 +138,20 @@ export const HomePage: React.FC = () => {
     description: DEFAULT_SITE_DESCRIPTION,
   });
 
-  const { events, venues, neighborhoods, hasRealEvents } = useCatalog();
+  const { events, venues, neighborhoods, hasRealEvents, isRefreshing, refreshCatalog } =
+    useCatalog();
   const { profile, favorites } = useAuth();
+  const { notify } = useToast();
   const navigate = useNavigate();
+
+  const handleManualRefresh = async () => {
+    const res = await refreshCatalog();
+    notify(
+      res.usedFallback
+        ? 'Catálogo sincronizado com os dados disponíveis.'
+        : 'Catálogo de rolês atualizado.',
+    );
+  };
 
   const [heroQuery, setHeroQuery] = useState('');
   const [heroSearchFocused, setHeroSearchFocused] = useState(false);
@@ -339,7 +353,11 @@ export const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#101012] text-[#F7F7F5]">
+    <PullToRefresh
+      onRefresh={refreshCatalog}
+      isRefreshing={isRefreshing}
+      className="bg-[#101012] text-[#F7F7F5]"
+    >
       {/* HERO: Nightlife Photography + Expressive Display Type + Live Search & Quick Filters */}
       <section className="relative z-30 bg-[#101012] film-grain">
         <div aria-hidden="true" className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -399,7 +417,8 @@ export const HomePage: React.FC = () => {
                     aria-autocomplete="list"
                     aria-expanded={showSuggestions}
                     aria-controls="hero-search-suggestions"
-                    className="flex-1 h-10 bg-transparent px-3 text-sm text-[#101012] placeholder:text-[#6B6B73] focus:outline-none focus-visible:outline-none min-w-0"
+                    enterKeyHint="search"
+                    className="flex-1 h-11 sm:h-10 bg-transparent px-3 text-base sm:text-sm text-[#101012] placeholder:text-[#6B6B73] focus:outline-none focus-visible:outline-none min-w-0"
                   />
                   <button
                     type="submit"
@@ -537,6 +556,18 @@ export const HomePage: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => void handleManualRefresh()}
+                  disabled={isRefreshing}
+                  aria-label="Atualizar catálogo de eventos"
+                  title="Atualizar catálogo"
+                  className="w-10 h-10 rounded-full bg-white border border-[#E2E2DE] hover:border-[#101012] active:scale-95 disabled:opacity-60 text-[#101012] flex items-center justify-center transition-all"
+                >
+                  <RefreshCw
+                    className={`w-4 h-4 ${isRefreshing ? 'motion-safe:animate-spin text-[#FF5A36]' : ''}`}
+                  />
+                </button>
                 <button
                   type="button"
                   onClick={() => scrollTrack(highlightsTrackRef, 'prev')}
@@ -1155,6 +1186,6 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
       </section>
-    </div>
+    </PullToRefresh>
   );
 };

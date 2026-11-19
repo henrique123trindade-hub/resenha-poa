@@ -157,7 +157,7 @@ export const AiCuratorPanel: React.FC = () => {
               <select
                 value={neighborhood}
                 onChange={(e) => setNeighborhood(e.target.value)}
-                className="w-full h-11 rounded-xl bg-[#101012] border border-[#28282E] px-3 text-sm text-[#F7F7F5] focus:border-[#FF5A36] focus:outline-none"
+                className="w-full min-w-0 h-11 rounded-xl bg-[#101012] border border-[#28282E] px-3.5 text-base sm:text-sm text-[#F7F7F5] focus:border-[#FF5A36] focus:outline-none"
               >
                 <option value="Cidade Baixa">Cidade Baixa</option>
                 <option value="Moinhos de Vento">Moinhos de Vento</option>
@@ -174,7 +174,7 @@ export const AiCuratorPanel: React.FC = () => {
               <select
                 value={budget}
                 onChange={(e) => setBudget(e.target.value)}
-                className="w-full h-11 rounded-xl bg-[#101012] border border-[#28282E] px-3 text-sm text-[#F7F7F5] focus:border-[#FF5A36] focus:outline-none"
+                className="w-full min-w-0 h-11 rounded-xl bg-[#101012] border border-[#28282E] px-3.5 text-base sm:text-sm text-[#F7F7F5] focus:border-[#FF5A36] focus:outline-none"
               >
                 <option value="Gratuito / Rolê 0800">Gratuito / Rolê 0800</option>
                 <option value="Até R$ 50">Até R$ 50</option>
@@ -189,7 +189,7 @@ export const AiCuratorPanel: React.FC = () => {
               <select
                 value={ageGroup}
                 onChange={(e) => setAgeGroup(e.target.value as '18+' | 'menor')}
-                className="w-full h-11 rounded-xl bg-[#101012] border border-[#28282E] px-3 text-sm text-[#F7F7F5] focus:border-[#FF5A36] focus:outline-none"
+                className="w-full min-w-0 h-11 rounded-xl bg-[#101012] border border-[#28282E] px-3.5 text-base sm:text-sm text-[#F7F7F5] focus:border-[#FF5A36] focus:outline-none"
               >
                 <option value="18+">Adultos (18+)</option>
                 <option value="menor">Inclui menores de 18 anos (Livre / 16+)</option>
@@ -211,7 +211,8 @@ export const AiCuratorPanel: React.FC = () => {
                   : 'Ex: sexta à noite com amigos, primeiro bar tranquilo depois pista eletrônica'
             }
             aria-label="Consulta de curadoria em Porto Alegre"
-            className="flex-1 h-12 rounded-xl bg-[#101012] border border-[#28282E] focus:border-[#5265FF] px-4 text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none"
+            enterKeyHint="send"
+            className="flex-1 min-w-0 h-12 rounded-xl bg-[#101012] border border-[#28282E] focus:border-[#5265FF] px-4 text-base sm:text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none"
           />
           <button
             type="submit"

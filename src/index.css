@@ -70,13 +70,35 @@ html {
   color: var(--ink-white);
   font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overflow-x: clip;
 }
 
 body {
   margin: 0;
   background-color: var(--bg-deep);
   color: var(--ink-white);
-  overflow-x: hidden;
+  overflow-x: clip;
+  min-height: 100dvh;
+}
+
+@layer base {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']),
+  select,
+  textarea {
+    scroll-margin-top: 5.5rem;
+    scroll-margin-bottom: 6rem;
+  }
+
+  /* Prevent iOS Safari involuntary auto-zoom by guaranteeing >= 16px computed font size on touch/mobile viewports */
+  @media (max-width: 767px), (pointer: coarse) {
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']),
+    select,
+    textarea {
+      font-size: 16px;
+    }
+  }
 }
 
 .font-display,

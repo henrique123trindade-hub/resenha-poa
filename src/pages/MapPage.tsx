@@ -149,7 +149,7 @@ export const MapPage: React.FC = () => {
             id="map-kind"
             value={kindFilter}
             onChange={(e) => setKindFilter(e.target.value as 'all' | 'event' | 'venue')}
-            className="w-full h-10 px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-xs font-medium text-[#F7F7F5] focus:outline-none"
+            className="w-full min-w-0 h-11 sm:h-10 px-3.5 sm:px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-base sm:text-xs font-medium text-[#F7F7F5] focus:outline-none"
           >
             <option value="all">Eventos e bares</option>
             <option value="event">Somente eventos</option>
@@ -168,7 +168,7 @@ export const MapPage: React.FC = () => {
             id="map-cat"
             value={category}
             onChange={(e) => setCategory(e.target.value as EventCategoryId | 'todos')}
-            className="w-full h-10 px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-xs font-medium text-[#F7F7F5] focus:outline-none"
+            className="w-full min-w-0 h-11 sm:h-10 px-3.5 sm:px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-base sm:text-xs font-medium text-[#F7F7F5] focus:outline-none"
           >
             <option value="todos">Todas as categorias</option>
             {categories.map((c) => (
@@ -190,7 +190,7 @@ export const MapPage: React.FC = () => {
             id="map-date"
             value={quickDate}
             onChange={(e) => setQuickDate(e.target.value as QuickDateFilter)}
-            className="w-full h-10 px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-xs font-medium text-[#F7F7F5] focus:outline-none"
+            className="w-full min-w-0 h-11 sm:h-10 px-3.5 sm:px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-base sm:text-xs font-medium text-[#F7F7F5] focus:outline-none"
           >
             <option value="all">Todas as datas</option>
             <option value="today">Hoje</option>

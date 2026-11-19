@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import {
   ArrowUpRight,
@@ -30,11 +30,18 @@ import {
   computePollRanking,
   filterPollCatalogItems,
 } from '../utils/boraJuntoSummary';
+import {
+  BORA_JUNTO_LIMITS,
+  validateParticipantName,
+  validatePollTitle,
+} from '../utils/boraJuntoForm';
 import { useDocumentHead } from '../utils/seoHead';
 import { SectionKicker } from '../components/BrandMark';
+import { ResenhaInput } from '../components/FormField';
 import { useToast } from '../components/Layout';
 
 const GUEST_VOTER_KEY = 'resenhapoa_guest_voter_id';
+const GUEST_VOTER_NAME_KEY = 'resenhapoa_guest_voter_name';
 
 function getOrCreateGuestVoterId(): string {
   const existing = localStorage.getItem(GUEST_VOTER_KEY);
@@ -42,6 +49,17 @@ function getOrCreateGuestVoterId(): string {
   const created = `guest_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
   localStorage.setItem(GUEST_VOTER_KEY, created);
   return created;
+}
+
+function getSavedGuestVoterName(): string {
+  try {
+    return (localStorage.getItem(GUEST_VOTER_NAME_KEY) || '').slice(
+      0,
+      BORA_JUNTO_LIMITS.PARTICIPANT_NAME_MAX,
+    );
+  } catch {
+    return '';
+  }
 }
 
 export const BoraJuntoPage: React.FC = () => {
@@ -56,16 +74,21 @@ export const BoraJuntoPage: React.FC = () => {
   const [poll, setPoll] = useState<PollListItem | null>(null);
   const [votes, setVotes] = useState<PollVoteItem[]>([]);
   const [loadingPoll, setLoadingPoll] = useState(Boolean(listId));
-  const [voterName, setVoterName] = useState('');
+  const [voterName, setVoterName] = useState<string>(() => getSavedGuestVoterName());
+  const [voterNameError, setVoterNameError] = useState<string | null>(null);
   const [votingBusy, setVotingBusy] = useState(false);
+  const voterNameInputRef = useRef<HTMLInputElement | null>(null);
 
   // Mode 2: Creating a new list
   const [title, setTitle] = useState('');
+  const [titleError, setTitleError] = useState<string | null>(null);
   const [description, setDescription] = useState('');
   const [selectedOptions, setSelectedOptions] = useState<PollOption[]>([]);
   const [catalogQuery, setCatalogQuery] = useState('');
   const [creating, setCreating] = useState(false);
   const [myLists, setMyLists] = useState<PollListItem[]>([]);
+  const pollTitleInputRef = useRef<HTMLInputElement | null>(null);
+  const pollDescInputRef = useRef<HTMLInputElement | null>(null);
 
   useDocumentHead({
     title: poll ? `${poll.title} · Bora Junto — ResenhaPOA` : 'Bora Junto · Decida o rolê com a galera — ResenhaPOA',
@@ -209,10 +232,13 @@ export const BoraJuntoPage: React.FC = () => {
       openAuthModal('Entre com sua conta Google para criar e compartilhar uma lista Bora Junto.');
       return;
     }
-    if (title.trim().length < 3) {
-      notify('Dê um nome para a lista (mínimo 3 caracteres).');
+    const titleCheck = validatePollTitle(title);
+    if (!titleCheck.valid) {
+      setTitleError(titleCheck.error);
+      pollTitleInputRef.current?.focus();
       return;
     }
+    setTitleError(null);
     if (selectedOptions.length < 2) {
       notify('Escolha pelo menos 2 opções de rolê ou bar para o grupo votar.');
       return;
@@ -220,8 +246,8 @@ export const BoraJuntoPage: React.FC = () => {
     setCreating(true);
     try {
       const created = await createPollListInFirestore({
-        title,
-        description,
+        title: titleCheck.normalized,
+        description: description.trim().slice(0, BORA_JUNTO_LIMITS.POLL_DESC_MAX),
         creatorId: user.uid,
         creatorName: user.displayName || 'Organizador do rolê',
         options: selectedOptions,
@@ -237,13 +263,29 @@ export const BoraJuntoPage: React.FC = () => {
 
   const handleCastVote = async (optionId: string) => {
     if (!poll || !poll.isOpen) return;
+    let label = user?.displayName?.trim() || '';
+    if (!user) {
+      const nameCheck = validateParticipantName(voterName);
+      if (!nameCheck.valid) {
+        setVoterNameError(nameCheck.error);
+        voterNameInputRef.current?.focus();
+        voterNameInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      setVoterNameError(null);
+      label = nameCheck.normalized;
+      try {
+        localStorage.setItem(GUEST_VOTER_NAME_KEY, label);
+      } catch {
+        // Ignore storage errors in private mode
+      }
+    }
     setVotingBusy(true);
-    const label = user?.displayName || voterName.trim() || 'Convidado(a)';
     try {
       await castPollVote({
         listId: poll.id,
         voterId: currentVoterId,
-        voterLabel: label,
+        voterLabel: label || 'Convidado(a)',
         optionId,
       });
       const updated = await fetchPollVotes(poll.id);
@@ -437,22 +479,50 @@ export const BoraJuntoPage: React.FC = () => {
         )}
 
         {!user && poll.isOpen && (
-          <div className="bg-[#1C1C20] border border-[#28282E] rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3">
-            <label
-              htmlFor="guest-voter-name"
-              className="text-xs font-bold uppercase tracking-wider text-[#98989F] shrink-0"
-            >
-              Seu nome no voto (sem login):
-            </label>
-            <input
+          <section
+            aria-label="Identificação para votar"
+            className="bg-[#1C1C20] border border-[#28282E] rounded-2xl p-5 sm:p-6"
+          >
+            <ResenhaInput
+              ref={voterNameInputRef}
               id="guest-voter-name"
               type="text"
+              label="Como podemos te chamar?"
+              placeholder="Digite seu nome"
+              helperText="Esse nome aparece para a galera do grupo."
               value={voterName}
-              onChange={(e) => setVoterName(e.target.value)}
-              placeholder="Ex: Marina"
-              className="flex-1 h-10 px-4 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none"
+              error={voterNameError}
+              maxLength={BORA_JUNTO_LIMITS.PARTICIPANT_NAME_MAX}
+              showCount
+              required
+              autoComplete="name"
+              autoCapitalize="words"
+              autoCorrect="off"
+              enterKeyHint="done"
+              onChange={(e) => {
+                const next = e.target.value;
+                setVoterName(next);
+                if (voterNameError && validateParticipantName(next).valid) {
+                  setVoterNameError(null);
+                }
+                try {
+                  localStorage.setItem(GUEST_VOTER_NAME_KEY, next);
+                } catch {
+                  // Ignore storage errors in private mode
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  const check = validateParticipantName(voterName);
+                  setVoterNameError(check.valid ? null : check.error);
+                  if (check.valid) {
+                    e.currentTarget.blur();
+                  }
+                }
+              }}
             />
-          </div>
+          </section>
         )}
 
         <div className="space-y-4">
@@ -564,39 +634,55 @@ export const BoraJuntoPage: React.FC = () => {
             Nova lista de votação
           </h2>
 
-          <div>
-            <label
-              htmlFor="poll-title"
-              className="block text-[11px] font-bold uppercase tracking-wider text-[#98989F] mb-1.5"
-            >
-              Título do rolê
-            </label>
-            <input
-              id="poll-title"
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ex: Sexta da galera na Cidade Baixa"
-              className="w-full h-11 px-3.5 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none"
-            />
-          </div>
+          <ResenhaInput
+            ref={pollTitleInputRef}
+            id="poll-title"
+            type="text"
+            label="Qual vai ser o nome da resenha?"
+            placeholder="Ex.: Rolê de sábado"
+            helperText="Esse nome aparece no convite e no link enviado para a galera."
+            value={title}
+            error={titleError}
+            maxLength={BORA_JUNTO_LIMITS.POLL_TITLE_MAX}
+            showCount
+            required
+            autoCapitalize="sentences"
+            enterKeyHint="next"
+            onChange={(e) => {
+              const next = e.target.value;
+              setTitle(next);
+              if (titleError && validatePollTitle(next).valid) {
+                setTitleError(null);
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                pollDescInputRef.current?.focus();
+              }
+            }}
+          />
 
-          <div>
-            <label
-              htmlFor="poll-desc"
-              className="block text-[11px] font-bold uppercase tracking-wider text-[#98989F] mb-1.5"
-            >
-              Recado pro grupo (opcional)
-            </label>
-            <input
-              id="poll-desc"
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Ex: Votação fecha sexta às 18h"
-              className="w-full h-11 px-3.5 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none"
-            />
-          </div>
+          <ResenhaInput
+            ref={pollDescInputRef}
+            id="poll-desc"
+            type="text"
+            sizeVariant="default"
+            label="Recado pro grupo"
+            optionalTag="(opcional)"
+            placeholder="Ex.: Votação fecha sexta às 18h"
+            value={description}
+            maxLength={BORA_JUNTO_LIMITS.POLL_DESC_MAX}
+            autoCapitalize="sentences"
+            enterKeyHint="done"
+            onChange={(e) => setDescription(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                e.currentTarget.blur();
+              }
+            }}
+          />
 
           <div className="pt-3 border-t border-[#28282E]">
             <p className="text-xs font-bold uppercase tracking-wider text-[#F7F7F5] mb-2">
@@ -667,7 +753,8 @@ export const BoraJuntoPage: React.FC = () => {
               onChange={(e) => setCatalogQuery(e.target.value)}
               placeholder="Filtrar eventos ou bares por nome, estilo ou bairro..."
               aria-label="Filtrar catálogo para enquete Bora Junto"
-              className="w-full h-11 pl-10 pr-4 bg-[#1C1C20] border border-[#28282E] focus:border-[#FF5A36] focus:ring-2 focus:ring-[#FF5A36]/30 rounded-xl text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none focus-visible:outline-none transition-shadow"
+              enterKeyHint="search"
+              className="w-full min-w-0 h-12 pl-10 pr-4 bg-[#1C1C20] border border-[#28282E] focus:border-[#FF5A36] focus:ring-2 focus:ring-[#FF5A36]/25 rounded-xl text-base sm:text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none focus-visible:outline-none transition-shadow"
             />
           </div>
 

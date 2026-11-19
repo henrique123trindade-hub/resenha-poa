@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   AlertTriangle,
   ArrowLeft,
   Calendar,
+  Check,
   Copy,
   ExternalLink,
   Flag,
@@ -13,6 +14,7 @@ import {
   Share2,
   ShieldCheck,
   Users,
+  X,
 } from 'lucide-react';
 import { useCatalog } from '../contexts/CatalogContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -20,6 +22,11 @@ import { CAMPAIGN_PHOTOS, CATEGORIES } from '../data/seedCatalog';
 import { formatEventDatePtBr, formatIsoDateFullPtBr } from '../utils/datePoa';
 import { getNightlifeSrcSet } from '../utils/responsiveImage';
 import { buildEventJsonLd, useDocumentHead } from '../utils/seoHead';
+import {
+  buildEventSharePayload,
+  buildSocialShareLinks,
+  shareEventWithWebShare,
+} from '../utils/eventShare';
 import { toggleFavoriteInFirestore, submitReport } from '../services/firestoreService';
 import { PoaMapView } from '../components/PoaMapView';
 import { EventCard } from '../components/EventCard';
@@ -36,6 +43,25 @@ export const EventDetailPage: React.FC = () => {
   const [reportOpen, setReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [reportBusy, setReportBusy] = useState(false);
+  const [shareBusy, setShareBusy] = useState(false);
+  const [shareTrayOpen, setShareTrayOpen] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  useEffect(() => {
+    setShareTrayOpen(false);
+    setCopiedLink(false);
+  }, [slug]);
+
+  useEffect(() => {
+    if (!shareTrayOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShareTrayOpen(false);
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [shareTrayOpen]);
 
   const pageUrl = typeof window !== 'undefined' ? window.location.href : '';
   useDocumentHead({
@@ -81,9 +107,8 @@ export const EventDetailPage: React.FC = () => {
   const heroImg = event.imageUrl || CAMPAIGN_PHOTOS.amberCrowd;
 
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
-  const whatsappHref = `https://wa.me/?text=${encodeURIComponent(
-    `${event.title} · ${formatEventDatePtBr(event.dateISO)} às ${event.startTime} em ${event.neighborhood}, Porto Alegre — ${shareUrl}`,
-  )}`;
+  const sharePayload = buildEventSharePayload(event, shareUrl);
+  const socialShareLinks = buildSocialShareLinks(sharePayload);
 
   const handleSave = async () => {
     if (!user) {
@@ -107,9 +132,30 @@ export const EventDetailPage: React.FC = () => {
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl);
+      setCopiedLink(true);
       notify('Link copiado para compartilhar.');
+      window.setTimeout(() => setCopiedLink(false), 2400);
     } catch {
       notify('Copie o endereço da barra do navegador.');
+    }
+  };
+
+  const handleNativeShare = async () => {
+    if (shareBusy) return;
+    setShareBusy(true);
+    try {
+      const outcome = await shareEventWithWebShare(
+        sharePayload,
+        typeof navigator !== 'undefined' ? navigator : null,
+      );
+      if (outcome === 'shared') {
+        setShareTrayOpen(false);
+        notify('Evento compartilhado.');
+      } else if (outcome === 'fallback') {
+        setShareTrayOpen((open) => !open);
+      }
+    } finally {
+      setShareBusy(false);
     }
   };
 
@@ -297,7 +343,7 @@ export const EventDetailPage: React.FC = () => {
                     value={reportReason}
                     onChange={(e) => setReportReason(e.target.value)}
                     placeholder="Ex: horário alterado, valor incorreto, evento cancelado..."
-                    className="w-full rounded-xl bg-[#1C1C20] border border-[#28282E] p-3 text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:border-[#FF5A36] focus:outline-none"
+                    className="w-full min-w-0 rounded-xl bg-[#1C1C20] border border-[#28282E] p-3.5 text-base sm:text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:border-[#FF5A36] focus:outline-none"
                   />
                   <div className="flex gap-2 justify-end">
                     <button
@@ -434,25 +480,130 @@ export const EventDetailPage: React.FC = () => {
                 <span>Incluir no Bora Junto</span>
               </Link>
 
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                <a
-                  href={whatsappHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="py-2.5 px-3 rounded-xl bg-[#101012] border border-[#28282E] hover:border-[#F7F7F5]/60 text-xs font-semibold text-[#F7F7F5] flex items-center justify-center gap-1.5 transition-colors"
+              <button
+                type="button"
+                onClick={handleNativeShare}
+                disabled={shareBusy}
+                aria-expanded={shareTrayOpen}
+                aria-controls="event-share-panel"
+                className={`w-full py-3 px-4 rounded-xl border text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-60 ${
+                  shareTrayOpen
+                    ? 'border-[#FF5A36] bg-[#FF5A36]/12 text-[#FF5A36]'
+                    : 'border-[#28282E] bg-[#101012] hover:border-[#F7F7F5]/60 text-[#F7F7F5]'
+                }`}
+              >
+                <Share2 className="w-4 h-4" />
+                <span>{shareBusy ? 'Abrindo compartilhamento...' : 'Compartilhar evento'}</span>
+              </button>
+
+              {shareTrayOpen && (
+                <div
+                  id="event-share-panel"
+                  role="region"
+                  aria-label="Opções de compartilhamento nas redes sociais"
+                  className="motion-safe:animate-menu-in p-4 rounded-xl bg-[#101012] border border-[#28282E] space-y-3"
                 >
-                  <Share2 className="w-3.5 h-3.5" />
-                  <span>WhatsApp</span>
-                </a>
-                <button
-                  type="button"
-                  onClick={handleCopyLink}
-                  className="py-2.5 px-3 rounded-xl bg-[#101012] border border-[#28282E] hover:border-[#F7F7F5]/60 text-xs font-semibold text-[#F7F7F5] flex items-center justify-center gap-1.5 transition-colors"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                  <span>Copiar link</span>
-                </button>
-              </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#98989F]">
+                      Compartilhar nas redes
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setShareTrayOpen(false)}
+                      aria-label="Fechar opções de compartilhamento"
+                      className="w-6 h-6 rounded-full flex items-center justify-center text-[#98989F] hover:text-[#F7F7F5] hover:bg-[#1C1C20] transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <a
+                      href={socialShareLinks.whatsapp}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="py-2.5 px-3 rounded-lg bg-[#1C1C20] border border-[#28282E] hover:border-[#FF5A36]/60 text-xs font-semibold text-[#F7F7F5] flex items-center justify-center gap-1.5 transition-colors"
+                    >
+                      <span>WhatsApp</span>
+                      <ExternalLink className="w-3 h-3 text-[#98989F]" />
+                    </a>
+                    <a
+                      href={socialShareLinks.x}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="py-2.5 px-3 rounded-lg bg-[#1C1C20] border border-[#28282E] hover:border-[#FF5A36]/60 text-xs font-semibold text-[#F7F7F5] flex items-center justify-center gap-1.5 transition-colors"
+                    >
+                      <span>X (Twitter)</span>
+                      <ExternalLink className="w-3 h-3 text-[#98989F]" />
+                    </a>
+                    <a
+                      href={socialShareLinks.facebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="py-2.5 px-3 rounded-lg bg-[#1C1C20] border border-[#28282E] hover:border-[#FF5A36]/60 text-xs font-semibold text-[#F7F7F5] flex items-center justify-center gap-1.5 transition-colors"
+                    >
+                      <span>Facebook</span>
+                      <ExternalLink className="w-3 h-3 text-[#98989F]" />
+                    </a>
+                    <a
+                      href={socialShareLinks.telegram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="py-2.5 px-3 rounded-lg bg-[#1C1C20] border border-[#28282E] hover:border-[#FF5A36]/60 text-xs font-semibold text-[#F7F7F5] flex items-center justify-center gap-1.5 transition-colors"
+                    >
+                      <span>Telegram</span>
+                      <ExternalLink className="w-3 h-3 text-[#98989F]" />
+                    </a>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyLink}
+                    className="w-full py-2.5 px-3 rounded-lg bg-[#1C1C20] border border-[#28282E] hover:border-[#F7F7F5]/60 text-xs font-semibold text-[#F7F7F5] flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    {copiedLink ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-[#34D399]" />
+                        <span>Link copiado</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Copiar link do evento</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {!shareTrayOpen && (
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <a
+                    href={socialShareLinks.whatsapp}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="py-2.5 px-3 rounded-xl bg-[#101012] border border-[#28282E] hover:border-[#F7F7F5]/60 text-xs font-semibold text-[#F7F7F5] flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <Share2 className="w-3.5 h-3.5" />
+                    <span>WhatsApp</span>
+                  </a>
+                  <button
+                    type="button"
+                    onClick={handleCopyLink}
+                    className="py-2.5 px-3 rounded-xl bg-[#101012] border border-[#28282E] hover:border-[#F7F7F5]/60 text-xs font-semibold text-[#F7F7F5] flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    {copiedLink ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-[#34D399]" />
+                        <span>Copiado</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Copiar link</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </aside>

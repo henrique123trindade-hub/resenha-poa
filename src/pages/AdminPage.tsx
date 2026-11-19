@@ -265,7 +265,7 @@ export const AdminPage: React.FC = () => {
   };
 
   const fieldClass =
-    'w-full h-10 px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none';
+    'w-full min-w-0 h-11 sm:h-10 px-3.5 sm:px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-base sm:text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none';
 
   return (
     <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-8 text-[#F7F7F5]">
@@ -492,7 +492,7 @@ export const AdminPage: React.FC = () => {
                 rows={7}
                 value={csvText}
                 onChange={(e) => setCsvText(e.target.value)}
-                className="w-full p-3.5 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl font-mono text-xs text-[#F7F7F5] focus:outline-none"
+                className="w-full min-w-0 p-3.5 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl font-mono text-base sm:text-xs text-[#F7F7F5] focus:outline-none"
               />
 
               <div className="flex flex-wrap gap-3">
@@ -624,7 +624,7 @@ export const AdminPage: React.FC = () => {
                   value={vDesc}
                   onChange={(e) => setVDesc(e.target.value)}
                   placeholder="Descrição editorial *"
-                  className="w-full p-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-sm text-[#F7F7F5] focus:outline-none"
+                  className="w-full min-w-0 p-3.5 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-base sm:text-sm text-[#F7F7F5] focus:outline-none"
                 />
                 <button
                   type="submit"
@@ -727,7 +727,7 @@ export const AdminPage: React.FC = () => {
                     value={neiSummary}
                     onChange={(e) => setNeiSummary(e.target.value)}
                     placeholder="Resumo editorial"
-                    className="w-full p-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-sm text-[#F7F7F5] focus:outline-none"
+                    className="w-full min-w-0 p-3.5 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-base sm:text-sm text-[#F7F7F5] focus:outline-none"
                   />
                   <button
                     type="button"

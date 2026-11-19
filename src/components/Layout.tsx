@@ -51,6 +51,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [mobileInputFocused, setMobileInputFocused] = useState(false);
 
   const exploreRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
@@ -68,6 +69,38 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    const isTextEntryTarget = (el: EventTarget | null): boolean => {
+      if (!(el instanceof HTMLElement)) return false;
+      const tag = el.tagName;
+      if (tag === 'TEXTAREA' || tag === 'SELECT') return true;
+      if (tag === 'INPUT') {
+        const type = (el as HTMLInputElement).type?.toLowerCase();
+        return !['checkbox', 'radio', 'button', 'submit', 'reset', 'range', 'file', 'color'].includes(type);
+      }
+      return el.isContentEditable;
+    };
+
+    const onFocusIn = (e: FocusEvent) => {
+      if (window.innerWidth < 1024 && isTextEntryTarget(e.target)) {
+        setMobileInputFocused(true);
+      }
+    };
+    const onFocusOut = () => {
+      window.setTimeout(() => {
+        if (!isTextEntryTarget(document.activeElement)) {
+          setMobileInputFocused(false);
+        }
+      }, 60);
+    };
+    document.addEventListener('focusin', onFocusIn);
+    document.addEventListener('focusout', onFocusOut);
+    return () => {
+      document.removeEventListener('focusin', onFocusIn);
+      document.removeEventListener('focusout', onFocusOut);
+    };
   }, []);
 
   useEffect(() => {
@@ -140,7 +173,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
   return (
     <ToastContext.Provider value={{ notify }}>
-      <div id="top" className="min-h-screen flex flex-col bg-[#101012] text-[#F7F7F5]">
+      <div id="top" className="min-h-[100dvh] flex flex-col bg-[#101012] text-[#F7F7F5]">
         {/* ResenhaPOA Compact Sticky Nightlife Header */}
         <header
           className={`sticky top-0 z-40 text-[#F7F7F5] border-b transition-all duration-200 ${
@@ -364,8 +397,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   onChange={(e) => setQuickQuery(e.target.value)}
                   placeholder="Buscar festas, bares, artistas ou bairros de POA..."
                   aria-label="Buscar eventos e bares em Porto Alegre"
+                  enterKeyHint="search"
                   autoFocus
-                  className="flex-1 bg-transparent text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none py-1.5"
+                  className="flex-1 min-w-0 h-11 bg-transparent text-base sm:text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none focus-visible:outline-none py-1.5"
                 />
                 <button
                   type="submit"
@@ -474,10 +508,13 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         {/* Main Content */}
         <main className="flex-1 pb-16 lg:pb-0">{children}</main>
 
-        {/* Mobile Bottom Navigation */}
+        {/* Mobile Bottom Navigation — hidden while mobile keyboard is active to prevent floating overlap */}
         <nav
           aria-label="Navegação rápida mobile"
-          className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#101012]/96 backdrop-blur-lg border-t border-[#28282E] grid grid-cols-5 h-14 pb-[env(safe-area-inset-bottom)]"
+          aria-hidden={mobileInputFocused || undefined}
+          className={`lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#101012]/96 backdrop-blur-lg border-t border-[#28282E] grid grid-cols-5 min-h-14 pt-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] transition-opacity duration-150 ${
+            mobileInputFocused ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          }`}
         >
           <NavLink
             to="/"
@@ -711,9 +748,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             onClick={(e) => {
               if (e.target === e.currentTarget) closeAuthModal();
             }}
-            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]"
           >
-            <div className="max-w-md w-full bg-[#1C1C20] text-[#F7F7F5] border border-[#28282E] rounded-2xl p-6 sm:p-8 relative shadow-2xl">
+            <div className="max-w-md w-full max-h-[90dvh] overflow-y-auto bg-[#1C1C20] text-[#F7F7F5] border border-[#28282E] rounded-2xl p-6 sm:p-8 relative shadow-2xl">
               <button
                 type="button"
                 onClick={closeAuthModal}

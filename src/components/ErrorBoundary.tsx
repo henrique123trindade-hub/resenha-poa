@@ -22,7 +22,7 @@ export class ErrorBoundary extends React.Component<{ children: React.ReactNode }
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-[#080808] text-[#F4F4F2] flex items-center justify-center p-6">
+        <div className="min-h-[100dvh] bg-[#080808] text-[#F4F4F2] flex items-center justify-center p-6">
           <div className="max-w-lg w-full bg-[#141414] border border-[#292929] rounded-lg p-8 space-y-4">
             <p className="font-label text-xs uppercase tracking-widest text-[#858585] font-semibold">
               ResenhaPOA · Recuperação

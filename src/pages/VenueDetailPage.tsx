@@ -286,7 +286,7 @@ export const VenueDetailPage: React.FC = () => {
                     value={reportReason}
                     onChange={(e) => setReportReason(e.target.value)}
                     placeholder="Informe horário atualizado, endereço ou mudança de funcionamento..."
-                    className="w-full rounded-xl bg-[#1C1C20] border border-[#28282E] p-3 text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:border-[#FF5A36] focus:outline-none"
+                    className="w-full min-w-0 rounded-xl bg-[#1C1C20] border border-[#28282E] p-3.5 text-base sm:text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:border-[#FF5A36] focus:outline-none"
                   />
                   <div className="flex justify-end gap-2">
                     <button
@@ -397,7 +397,7 @@ export const VenueDetailPage: React.FC = () => {
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="Como foi o som, atendimento e clima do lugar?"
-                className="w-full rounded-xl bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] p-3 text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none"
+                className="w-full min-w-0 rounded-xl bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] p-3.5 text-base sm:text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none"
               />
               <button
                 type="submit"

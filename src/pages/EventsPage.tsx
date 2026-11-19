@@ -1,17 +1,30 @@
 import React, { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { LayoutGrid, List, Search, Sparkles, X } from 'lucide-react';
+import { LayoutGrid, List, RefreshCw, Search, Sparkles, X } from 'lucide-react';
 import { useCatalog } from '../contexts/CatalogContext';
+import { useToast } from '../components/Layout';
 import { EventCard } from '../components/EventCard';
+import { PullToRefresh } from '../components/PullToRefresh';
 import { SectionKicker } from '../components/BrandMark';
 import { filterAndSortEvents } from '../utils/eventFilters';
 import { useDocumentHead } from '../utils/seoHead';
 import type { AgeRating, EventCategoryId, PriceType, QuickDateFilter } from '../types/resenha';
 
 export const EventsPage: React.FC = () => {
-  const { events, categories, neighborhoods, hasRealEvents } = useCatalog();
+  const { events, categories, neighborhoods, hasRealEvents, isRefreshing, refreshCatalog } =
+    useCatalog();
+  const { notify } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  const handleManualRefresh = async () => {
+    const res = await refreshCatalog();
+    notify(
+      res.usedFallback
+        ? 'Agenda sincronizada com os dados disponíveis.'
+        : 'Agenda de eventos atualizada.',
+    );
+  };
 
   // Smart intent helper (calls server-side gemini-3.1-flash-lite)
   const [aiLoading, setAiLoading] = useState(false);
@@ -118,49 +131,62 @@ export const EventsPage: React.FC = () => {
     ageRating !== 'all';
 
   return (
-    <div className="max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 py-10 sm:py-14 text-[#F7F7F5]">
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 pb-6 border-b border-[#28282E] mb-8">
-        <div>
-          <SectionKicker label="Agenda Porto Alegre" tone="on-dark" />
-          <h1 className="font-display text-4xl sm:text-5xl font-extrabold italic uppercase tracking-tight text-[#F7F7F5]">
-            Eventos e rolês em POA
-          </h1>
-          <p className="text-sm sm:text-base text-[#98989F] mt-2 max-w-2xl">
-            {hasRealEvents
-              ? 'Programação em ordem cronológica, com origem transparente e filtros por bairro, estilo e faixa etária.'
-              : 'Exibindo catálogo de demonstração enquanto organizadores publicam a agenda local.'}
-          </p>
-        </div>
+    <PullToRefresh onRefresh={refreshCatalog} isRefreshing={isRefreshing}>
+      <div className="max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 py-10 sm:py-14 text-[#F7F7F5]">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 pb-6 border-b border-[#28282E] mb-8">
+          <div>
+            <SectionKicker label="Agenda Porto Alegre" tone="on-dark" />
+            <h1 className="font-display text-4xl sm:text-5xl font-extrabold italic uppercase tracking-tight text-[#F7F7F5]">
+              Eventos e rolês em POA
+            </h1>
+            <p className="text-sm sm:text-base text-[#98989F] mt-2 max-w-2xl">
+              {hasRealEvents
+                ? 'Programação em ordem cronológica, com origem transparente e filtros por bairro, estilo e faixa etária.'
+                : 'Exibindo catálogo de demonstração enquanto organizadores publicam a agenda local.'}
+            </p>
+          </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={() => setViewMode('grid')}
-            aria-label="Visualização em grade"
-            aria-pressed={viewMode === 'grid'}
-            className={`px-4 py-2 rounded-full border text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors ${
-              viewMode === 'grid'
-                ? 'bg-[#FF5A36] border-[#FF5A36] text-[#101012]'
-                : 'bg-[#1C1C20] border-[#28282E] text-[#98989F] hover:border-[#F7F7F5] hover:text-[#F7F7F5]'
-            }`}
-          >
-            <LayoutGrid className="w-3.5 h-3.5" /> Grade
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewMode('list')}
-            aria-label="Visualização em lista"
-            aria-pressed={viewMode === 'list'}
-            className={`px-4 py-2 rounded-full border text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors ${
-              viewMode === 'list'
-                ? 'bg-[#FF5A36] border-[#FF5A36] text-[#101012]'
-                : 'bg-[#1C1C20] border-[#28282E] text-[#98989F] hover:border-[#F7F7F5] hover:text-[#F7F7F5]'
-            }`}
-          >
-            <List className="w-3.5 h-3.5" /> Lista
-          </button>
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => void handleManualRefresh()}
+              disabled={isRefreshing}
+              aria-label="Atualizar catálogo de eventos"
+              className="px-4 py-2 rounded-full border bg-[#1C1C20] border-[#28282E] text-[#F7F7F5] hover:border-[#FF5A36] disabled:opacity-60 text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors"
+            >
+              <RefreshCw
+                className={`w-3.5 h-3.5 ${isRefreshing ? 'motion-safe:animate-spin text-[#FF5A36]' : ''}`}
+              />
+              <span>{isRefreshing ? 'Atualizando...' : 'Atualizar'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              aria-label="Visualização em grade"
+              aria-pressed={viewMode === 'grid'}
+              className={`px-4 py-2 rounded-full border text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors ${
+                viewMode === 'grid'
+                  ? 'bg-[#FF5A36] border-[#FF5A36] text-[#101012]'
+                  : 'bg-[#1C1C20] border-[#28282E] text-[#98989F] hover:border-[#F7F7F5] hover:text-[#F7F7F5]'
+              }`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" /> Grade
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('list')}
+              aria-label="Visualização em lista"
+              aria-pressed={viewMode === 'list'}
+              className={`px-4 py-2 rounded-full border text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-[#FF5A36] border-[#FF5A36] text-[#101012]'
+                  : 'bg-[#1C1C20] border-[#28282E] text-[#98989F] hover:border-[#F7F7F5] hover:text-[#F7F7F5]'
+              }`}
+            >
+              <List className="w-3.5 h-3.5" /> Lista
+            </button>
+          </div>
         </div>
-      </div>
 
       {/* Quick Date Strip */}
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-4 -mx-1 px-1">
@@ -231,7 +257,8 @@ export const EventsPage: React.FC = () => {
               onChange={(e) => updateParam('q', e.target.value || null)}
               placeholder="Buscar por festa, show, bar, bairro ou frase (ex: samba grátis na Cidade Baixa sexta)..."
               aria-label="Buscar eventos"
-              className="w-full h-11 pl-10 pr-4 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none"
+              enterKeyHint="search"
+              className="w-full min-w-0 h-12 sm:h-11 pl-10 pr-4 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-base sm:text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none"
             />
           </div>
           <button
@@ -259,7 +286,7 @@ export const EventsPage: React.FC = () => {
               id="filter-category"
               value={category}
               onChange={(e) => updateParam('categoria', e.target.value)}
-              className="w-full h-10 px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-xs font-medium text-[#F7F7F5] focus:outline-none"
+              className="w-full min-w-0 h-11 sm:h-10 px-3.5 sm:px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-base sm:text-xs font-medium text-[#F7F7F5] focus:outline-none"
             >
               <option value="todos">Todas as categorias</option>
               {categories.map((c) => (
@@ -281,7 +308,7 @@ export const EventsPage: React.FC = () => {
               id="filter-neighborhood"
               value={neighborhood}
               onChange={(e) => updateParam('bairro', e.target.value)}
-              className="w-full h-10 px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-xs font-medium text-[#F7F7F5] focus:outline-none"
+              className="w-full min-w-0 h-11 sm:h-10 px-3.5 sm:px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-base sm:text-xs font-medium text-[#F7F7F5] focus:outline-none"
             >
               <option value="todos">Todos os bairros de POA</option>
               {neighborhoods.map((n) => (
@@ -303,7 +330,7 @@ export const EventsPage: React.FC = () => {
               id="filter-age"
               value={ageRating}
               onChange={(e) => updateParam('idade', e.target.value)}
-              className="w-full h-10 px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-xs font-medium text-[#F7F7F5] focus:outline-none"
+              className="w-full min-w-0 h-11 sm:h-10 px-3.5 sm:px-3 bg-[#101012] border border-[#28282E] focus:border-[#FF5A36] rounded-xl text-base sm:text-xs font-medium text-[#F7F7F5] focus:outline-none"
             >
               <option value="all">Todas as faixas</option>
               <option value="under18_safe">Adequado para menores (Livre / 16+)</option>
@@ -392,6 +419,7 @@ export const EventsPage: React.FC = () => {
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </PullToRefresh>
   );
 };
