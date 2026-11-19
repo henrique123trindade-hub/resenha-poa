@@ -5,7 +5,9 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuthProvider } from './contexts/AuthContext';
 import { CatalogProvider } from './contexts/CatalogContext';
 import { Layout } from './components/Layout';
+import { ScrollToTop } from './components/ScrollToTop';
 import { HomePage } from './pages/HomePage';
+import { scrollToTopInstant } from './utils/scrollNavigation';
 
 const EventsPage = lazy(() => import('./pages/EventsPage').then((m) => ({ default: m.EventsPage })));
 const EventDetailPage = lazy(() =>
@@ -33,6 +35,21 @@ const InstitutionalPage = lazy(() =>
   import('./pages/InstitutionalPage').then((m) => ({ default: m.InstitutionalPage })),
 );
 
+function RouteLoadingFallback() {
+  useEffect(() => {
+    scrollToTopInstant();
+    return () => {
+      scrollToTopInstant();
+    };
+  }, []);
+
+  return (
+    <div className="min-h-[60vh] bg-[#101012] text-[#98989F] flex items-center justify-center text-xs uppercase tracking-widest">
+      Carregando...
+    </div>
+  );
+}
+
 export default function App() {
   const [mapsQuotaExceeded, setMapsQuotaExceeded] = useState(false);
 
@@ -47,6 +64,7 @@ export default function App() {
       <AuthProvider>
         <CatalogProvider>
           <BrowserRouter>
+            <ScrollToTop />
             {mapsQuotaExceeded && (
               <div
                 role="alert"
@@ -77,13 +95,7 @@ export default function App() {
               </div>
             )}
             <Layout>
-              <Suspense
-                fallback={
-                  <div className="min-h-[60vh] bg-[#080808] text-[#858585] flex items-center justify-center text-xs uppercase tracking-widest">
-                    Carregando...
-                  </div>
-                }
-              >
+              <Suspense fallback={<RouteLoadingFallback />}>
                 <Routes>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/eventos" element={<EventsPage />} />

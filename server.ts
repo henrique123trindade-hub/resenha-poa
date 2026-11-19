@@ -1,5 +1,6 @@
 import express from 'express';
 import fs from 'node:fs';
+import { createServer as createHttpServer } from 'node:http';
 import path from 'node:path';
 import dotenv from 'dotenv';
 import { GoogleGenAI, ThinkingLevel, Type } from '@google/genai';
@@ -267,10 +268,15 @@ Entregue um roteiro em 3 momentos (Esquenta / Rolê Principal / Depois ou Altern
     }
   });
 
+  const httpServer = createHttpServer(app);
+
   if (!isProduction) {
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        hmr: { server: httpServer },
+      },
       appType: 'spa',
     });
     app.use(vite.middlewares);
@@ -298,7 +304,7 @@ Entregue um roteiro em 3 momentos (Esquenta / Rolê Principal / Depois ou Altern
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`ResenhaPOA server running on http://0.0.0.0:${PORT}`);
   });
 }

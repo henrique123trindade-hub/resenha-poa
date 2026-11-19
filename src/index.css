@@ -1,5 +1,20 @@
 @import "tailwindcss";
 
+@theme {
+  --animate-event-fade-in: event-fade-in 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  @keyframes event-fade-in {
+    0% {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
 :root {
   /* ResenhaPOA 2.0 — Nightlife Premium Structural Tokens */
   --bg-deep: #101012;

@@ -23,6 +23,7 @@ import { useCatalog } from '../contexts/CatalogContext';
 import { useAuth } from '../contexts/AuthContext';
 import { CAMPAIGN_PHOTOS } from '../data/seedCatalog';
 import { EventCard } from '../components/EventCard';
+import { EventCardReveal } from '../components/EventCardReveal';
 import { VenueCard } from '../components/VenueCard';
 import { PoaMapView, type MapMarkerItem } from '../components/PoaMapView';
 import {
@@ -289,7 +290,7 @@ export const HomePage: React.FC = () => {
           className="absolute inset-0 bg-gradient-to-b from-[#101012]/75 via-[#101012]/65 to-[#101012] lg:bg-gradient-to-r lg:from-[#101012] lg:via-[#101012]/78 lg:to-[#101012]/15"
         />
 
-        <div className="relative z-10 max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 pt-9 pb-14 sm:pt-12 sm:pb-16 lg:pt-14 lg:pb-20">
+        <div className="relative z-10 max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 pt-9 pb-14 sm:pt-12 sm:pb-16 lg:pt-14 lg:pb-20">
           <div className="max-w-2xl space-y-5">
             <h1 className="font-display font-extrabold italic uppercase text-[#F7F7F5] tracking-[-0.02em] leading-[0.89] text-[clamp(2.85rem,6.4vw,4.75rem)] text-balance max-w-xl">
               <span className="block">TEU PRÓXIMO</span>
@@ -326,7 +327,7 @@ export const HomePage: React.FC = () => {
 
               {/* Quick Discovery Filters */}
               <div
-                className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 -mx-1 px-1"
+                className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 -mx-5 px-5 scroll-px-5 sm:mx-0 sm:px-0 sm:scroll-px-0"
                 role="group"
                 aria-label="Filtros rápidos de descoberta"
               >
@@ -389,7 +390,7 @@ export const HomePage: React.FC = () => {
 
       {/* BAND 1 (LIGHT SHEET): EM ALTA NA CIDADE — Immediate vibrant event discovery */}
       <section className="relative z-20 -mt-6 bg-[#F7F7F5] text-[#101012] rounded-t-[28px] sm:rounded-t-[36px] py-10 sm:py-12">
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-stretch">
             {/* Left Editorial Header & Carousel Controls */}
             <div className="lg:w-[228px] shrink-0 flex flex-row lg:flex-col justify-between items-end lg:items-start gap-4">
@@ -475,20 +476,23 @@ export const HomePage: React.FC = () => {
               ) : (
                 <div
                   ref={highlightsTrackRef}
-                  className="flex gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar -mx-4 px-4 lg:mx-0 lg:px-0 pb-1"
+                  className="flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-px-5 sm:scroll-px-6 lg:scroll-px-0 no-scrollbar -mx-5 px-5 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0 pb-2"
                 >
-                  {featuredEvents.map((ev) => (
-                    <div
-                      key={ev.id}
-                      className="w-[78vw] sm:w-[44vw] lg:w-[248px] xl:w-[258px] shrink-0 snap-start"
+                  {featuredEvents.map((ev, index) => (
+                    <EventCardReveal
+                      key={`${heroQuickDate}-${heroOnlyFree}-${ev.id}`}
+                      index={index}
+                      immediate
+                      className="w-[76vw] max-w-[300px] sm:w-[44vw] sm:max-w-none lg:w-[248px] xl:w-[258px] shrink-0 snap-start"
                     >
                       <EventCard event={ev} layout="poster" surface="light" />
-                    </div>
+                    </EventCardReveal>
                   ))}
+                  <div aria-hidden="true" className="w-1 shrink-0 lg:hidden" />
                 </div>
               )}
 
-              <div className="mt-4 flex items-center justify-between lg:justify-end gap-4">
+              <div className="mt-5 flex flex-col sm:flex-row sm:items-center justify-between lg:justify-end gap-2.5 sm:gap-4">
                 {!hasRealEvents && (
                   <p className="text-[11px] text-[#52525B] lg:hidden">
                     Exemplos ilustrativos ·{' '}
@@ -512,7 +516,7 @@ export const HomePage: React.FC = () => {
 
       {/* BAND 2 (DARK): BORA JUNTO? SPLIT + DESCOBRE POR VIBE */}
       <section className="bg-[#101012] text-[#F7F7F5] py-10 sm:py-14">
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch">
             {/* Left: Bora Junto? Editorial Photo Card */}
             <div className="lg:col-span-5 relative rounded-2xl overflow-hidden border border-[#28282E] bg-[#1C1C20] min-h-[250px] flex flex-col justify-between p-6 sm:p-7 group">
@@ -566,14 +570,14 @@ export const HomePage: React.FC = () => {
                 </Link>
               </div>
 
-              <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar -mx-4 px-4 lg:mx-0 lg:px-0 pb-1">
+              <div className="flex gap-3.5 overflow-x-auto snap-x snap-mandatory scroll-px-5 sm:scroll-px-6 lg:scroll-px-0 no-scrollbar -mx-5 px-5 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0 pb-2">
                 {VIBE_TILES.map((vibe) => {
                   const Icon = vibe.icon;
                   return (
                     <Link
                       key={vibe.id}
                       to={`/eventos?categoria=${vibe.categoryId}`}
-                      className="card-lift group relative w-[124px] sm:w-[132px] h-[176px] shrink-0 snap-start rounded-2xl overflow-hidden border border-[#28282E] hover:border-[#FF5A36] bg-[#1C1C20]"
+                      className="card-lift group relative w-[130px] sm:w-[136px] h-[180px] shrink-0 snap-start rounded-2xl overflow-hidden border border-[#28282E] hover:border-[#FF5A36] bg-[#1C1C20]"
                     >
                       <img
                         src={vibe.photo}
@@ -601,11 +605,12 @@ export const HomePage: React.FC = () => {
 
                 <Link
                   to="/eventos"
-                  className="w-[104px] h-[176px] shrink-0 snap-start rounded-2xl border border-[#28282E] hover:border-[#F7F7F5] bg-[#1C1C20] flex flex-col items-center justify-center gap-2 text-xs font-semibold text-[#98989F] hover:text-[#F7F7F5] transition-colors"
+                  className="w-[108px] h-[180px] shrink-0 snap-start rounded-2xl border border-[#28282E] hover:border-[#F7F7F5] bg-[#1C1C20] flex flex-col items-center justify-center gap-2 text-xs font-semibold text-[#98989F] hover:text-[#F7F7F5] transition-colors"
                 >
                   <ArrowRight className="w-4 h-4" />
                   <span>Ver todas</span>
                 </Link>
+                <div aria-hidden="true" className="w-1 shrink-0 lg:hidden" />
               </div>
             </div>
           </div>
@@ -615,7 +620,7 @@ export const HomePage: React.FC = () => {
       {/* CONDITIONAL PERSONALIZED BAND (Only rendered when real user preferences or favorites exist) */}
       {recommendedEvents.length > 0 && (
         <section className="bg-[#101012] border-t border-[#28282E] py-10 sm:py-12">
-          <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
               <div>
                 <SectionKicker
@@ -636,13 +641,14 @@ export const HomePage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {recommendedEvents.map(({ event, reasons }) => (
-                <EventCard
-                  key={event.id}
-                  event={event}
-                  layout="poster"
-                  reasonLabel={reasons[0]}
-                />
+              {recommendedEvents.map(({ event, reasons }, index) => (
+                <EventCardReveal key={event.id} index={index}>
+                  <EventCard
+                    event={event}
+                    layout="poster"
+                    reasonLabel={reasons[0]}
+                  />
+                </EventCardReveal>
               ))}
             </div>
           </div>
@@ -651,7 +657,7 @@ export const HomePage: React.FC = () => {
 
       {/* BAND 3 (LIGHT SHEET): EXPLORE A CIDADE — ROLÊS POR BAIRRO */}
       <section className="bg-[#F7F7F5] text-[#101012] rounded-3xl sm:rounded-[36px] py-10 sm:py-12 mx-0">
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start lg:items-center">
             {/* Left Heading */}
             <div className="lg:w-[228px] shrink-0">
@@ -667,7 +673,7 @@ export const HomePage: React.FC = () => {
 
             {/* Right Horizontal Neighborhood Photo Strip */}
             <div className="flex-1 min-w-0 w-full">
-              <div className="flex gap-3.5 overflow-x-auto snap-x snap-mandatory no-scrollbar -mx-4 px-4 lg:mx-0 lg:px-0 pb-1">
+              <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-px-5 sm:scroll-px-6 lg:scroll-px-0 no-scrollbar -mx-5 px-5 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0 pb-2">
                 {neighborhoods.map((nei) => {
                   const counts = neighborhoodCounts.get(nei.name) || { events: 0, venues: 0 };
                   const summaryLabel =
@@ -688,7 +694,7 @@ export const HomePage: React.FC = () => {
                     <Link
                       key={nei.id}
                       to={`/eventos?bairro=${encodeURIComponent(nei.name)}`}
-                      className="card-lift group relative w-[200px] sm:w-[210px] h-[142px] shrink-0 snap-start rounded-2xl overflow-hidden bg-[#101012] ring-1 ring-[#101012]/10"
+                      className="card-lift group relative w-[212px] sm:w-[220px] h-[148px] shrink-0 snap-start rounded-2xl overflow-hidden bg-[#101012] ring-1 ring-[#101012]/10"
                     >
                       <img
                         src={getNeighborhoodPhoto(nei.id)}
@@ -716,11 +722,12 @@ export const HomePage: React.FC = () => {
 
                 <Link
                   to="/mapa"
-                  className="w-[136px] h-[142px] shrink-0 snap-start rounded-2xl bg-[#101012] hover:bg-[#1C1C20] text-[#F7F7F5] flex flex-col items-center justify-center gap-2 text-center px-3 text-xs font-bold transition-colors"
+                  className="w-[140px] h-[148px] shrink-0 snap-start rounded-2xl bg-[#101012] hover:bg-[#1C1C20] text-[#F7F7F5] flex flex-col items-center justify-center gap-2 text-center px-3 text-xs font-bold transition-colors"
                 >
                   <ArrowRight className="w-4 h-4 text-[#FF5A36]" />
                   <span>Ver todos no mapa</span>
                 </Link>
+                <div aria-hidden="true" className="w-1 shrink-0 lg:hidden" />
               </div>
             </div>
           </div>
@@ -728,7 +735,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* BAND 4 (DARK): AGENDA DO FIM DE SEMANA + ENTRADA 0800 (ACID GREEN ACCENT) */}
-      <section className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+      <section className="max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 py-12 sm:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left: Weekend Schedule */}
           <div className="lg:col-span-8 space-y-6">
@@ -795,8 +802,10 @@ export const HomePage: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-3.5">
-                {weekendEvents.map((ev) => (
-                  <EventCard key={ev.id} event={ev} layout="list" surface="dark" />
+                {weekendEvents.map((ev, index) => (
+                  <EventCardReveal key={`${weekendTab}-${ev.id}`} index={index}>
+                    <EventCard event={ev} layout="list" surface="dark" />
+                  </EventCardReveal>
                 ))}
               </div>
             )}
@@ -873,7 +882,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* BAND 5 (DARK ELEVATED): BARES EM DESTAQUE */}
-      <section className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 border-t border-[#28282E]">
+      <section className="max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 py-8 sm:py-12 border-t border-[#28282E]">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
           <div className="flex-1">
             <SectionKicker label="Esquenta e balcão" tone="on-dark" />
@@ -901,7 +910,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* BAND 6 (DARK): MAPA INTERATIVO & DIVULGUE SEU EVENTO */}
-      <section className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-14 border-t border-[#28282E]">
+      <section className="max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-14 border-t border-[#28282E]">
         <div>
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-7">
             <div>

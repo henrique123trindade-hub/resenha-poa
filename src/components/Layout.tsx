@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { BrandWordmark } from './BrandMark';
+import { scrollToTopInstant } from '../utils/scrollNavigation';
 
 interface ToastContextValue {
   notify: (msg: string) => void;
@@ -110,7 +111,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       <div id="top" className="min-h-screen flex flex-col bg-[#101012] text-[#F7F7F5]">
         {/* ResenhaPOA 2.0 Compact Nightlife Header */}
         <header className="sticky top-0 z-40 bg-[#101012]/95 backdrop-blur-md text-[#F7F7F5] border-b border-[#28282E]">
-          <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
+          <div className="max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
             {/* Zone 1: Brand Wordmark */}
             <Link to="/" aria-label="ResenhaPOA, página inicial" className="shrink-0">
               <BrandWordmark size="md" tone="on-dark" />
@@ -406,6 +407,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           <NavLink
             to="/"
             end
+            onClick={scrollToTopInstant}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide transition-colors ${
                 isActive ? 'text-[#FF5A36]' : 'text-[#98989F]'
@@ -417,6 +419,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           </NavLink>
           <NavLink
             to="/eventos"
+            onClick={scrollToTopInstant}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide transition-colors ${
                 isActive ? 'text-[#FF5A36]' : 'text-[#98989F]'
@@ -428,6 +431,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           </NavLink>
           <NavLink
             to="/bares"
+            onClick={scrollToTopInstant}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide transition-colors ${
                 isActive ? 'text-[#FF5A36]' : 'text-[#98989F]'
@@ -439,6 +443,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           </NavLink>
           <NavLink
             to="/mapa"
+            onClick={scrollToTopInstant}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide transition-colors ${
                 isActive ? 'text-[#5265FF]' : 'text-[#98989F]'
@@ -450,6 +455,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           </NavLink>
           <NavLink
             to={user ? '/perfil' : '/favoritos'}
+            onClick={scrollToTopInstant}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide transition-colors ${
                 isActive ? 'text-[#FF5A36]' : 'text-[#98989F]'
@@ -463,7 +469,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
         {/* Nightlife Editorial Footer */}
         <footer className="bg-[#101012] text-[#F7F7F5] pt-14 pb-24 lg:pb-12 border-t border-[#28282E]">
-          <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-[#28282E]">
               <div className="md:col-span-5 space-y-4">
                 <Link to="/" className="inline-block">
@@ -559,7 +565,10 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               <span>ResenhaPOA · Porto Alegre — RS</span>
               <a
                 href="#top"
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
                 className="text-[#F7F7F5] hover:text-[#FF5A36] transition-colors"
               >
                 Voltar ao topo ↑
