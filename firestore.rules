@@ -1,0 +1,491 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Reusable Hardened Primitives ---
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return isVerifiedUser() && (
+        request.auth.token.email == 'henrique123trindade@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // --- Validation Blueprints ---
+    function isValidUser(data, uid) {
+      return data.keys().hasAll(['uid', 'displayName', 'email', 'role', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['uid', 'displayName', 'email', 'photoURL', 'role', 'favoriteCategories', 'favoriteNeighborhoods', 'createdAt', 'updatedAt']) &&
+        data.uid == uid &&
+        isValidId(data.uid) &&
+        data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 100 &&
+        data.email is string && data.email.size() >= 3 && data.email.size() <= 200 &&
+        (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 500)) &&
+        data.role in ['user', 'organizer', 'admin'] &&
+        (!('favoriteCategories' in data) || (data.favoriteCategories is list && data.favoriteCategories.size() <= 11 && (data.favoriteCategories.size() == 0 || data.favoriteCategories[0] is string))) &&
+        (!('favoriteNeighborhoods' in data) || (data.favoriteNeighborhoods is list && data.favoriteNeighborhoods.size() <= 8 && (data.favoriteNeighborhoods.size() == 0 || data.favoriteNeighborhoods[0] is string))) &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidOrganizerProfile(data, uid) {
+      return data.keys().hasAll(['ownerId', 'orgName', 'contactEmail', 'verificationStatus', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['ownerId', 'orgName', 'bio', 'instagram', 'website', 'contactEmail', 'verificationStatus', 'createdAt', 'updatedAt']) &&
+        data.ownerId == uid &&
+        isValidId(data.ownerId) &&
+        data.orgName is string && data.orgName.size() >= 2 && data.orgName.size() <= 120 &&
+        (!('bio' in data) || (data.bio is string && data.bio.size() <= 600)) &&
+        (!('instagram' in data) || (data.instagram is string && data.instagram.size() <= 120)) &&
+        (!('website' in data) || (data.website is string && data.website.size() <= 300)) &&
+        data.contactEmail is string && data.contactEmail.size() >= 3 && data.contactEmail.size() <= 200 &&
+        data.verificationStatus in ['pending', 'verified', 'rejected'] &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidEvent(data, eventId) {
+      return data.keys().hasAll(['id', 'slug', 'title', 'description', 'category', 'dateISO', 'startTime', 'neighborhood', 'venueName', 'address', 'priceType', 'ageRating', 'sourceName', 'isVerified', 'isDemoExample', 'isSponsored', 'isFeatured', 'status', 'organizerId', 'organizerName', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'slug', 'title', 'subtitle', 'description', 'category', 'dateISO', 'startTime', 'endTime', 'neighborhood', 'venueName', 'address', 'lat', 'lng', 'priceType', 'priceMin', 'priceLabel', 'ageRating', 'ticketUrl', 'lineup', 'imageUrl', 'sourceName', 'sourceUrl', 'lastVerifiedAt', 'isVerified', 'isDemoExample', 'isSponsored', 'isFeatured', 'status', 'organizerId', 'organizerName', 'createdAt', 'updatedAt']) &&
+        data.id == eventId &&
+        isValidId(data.id) &&
+        data.slug is string && data.slug.size() >= 2 && data.slug.size() <= 140 && data.slug.matches('^[a-z0-9\\-]+$') &&
+        data.title is string && data.title.size() >= 3 && data.title.size() <= 120 &&
+        (!('subtitle' in data) || (data.subtitle is string && data.subtitle.size() <= 200)) &&
+        data.description is string && data.description.size() >= 10 && data.description.size() <= 3000 &&
+        data.category in ['funk', 'eletronica', 'pagode-samba', 'sertanejo', 'rock-indie', 'hip-hop', 'pop', 'bares', 'shows', 'cultura', 'gratuitos'] &&
+        data.dateISO is string && data.dateISO.size() == 10 && data.dateISO.matches('^\\d{4}-\\d{2}-\\d{2}$') &&
+        data.startTime is string && data.startTime.size() == 5 && data.startTime.matches('^\\d{2}:\\d{2}$') &&
+        (!('endTime' in data) || (data.endTime is string && data.endTime.size() <= 5)) &&
+        data.neighborhood is string && data.neighborhood.size() >= 2 && data.neighborhood.size() <= 80 &&
+        data.venueName is string && data.venueName.size() >= 2 && data.venueName.size() <= 120 &&
+        data.address is string && data.address.size() >= 4 && data.address.size() <= 200 &&
+        (!('lat' in data) || (data.lat is number && data.lat >= -90 && data.lat <= 90)) &&
+        (!('lng' in data) || (data.lng is number && data.lng >= -180 && data.lng <= 180)) &&
+        data.priceType in ['free', 'paid', 'unconfirmed'] &&
+        (!('priceMin' in data) || (data.priceMin is number && data.priceMin >= 0 && data.priceMin <= 50000)) &&
+        (!('priceLabel' in data) || (data.priceLabel is string && data.priceLabel.size() <= 80)) &&
+        data.ageRating in ['Livre', '16+', '18+', 'Não informado'] &&
+        (!('ticketUrl' in data) || (data.ticketUrl is string && data.ticketUrl.size() <= 400)) &&
+        (!('lineup' in data) || (data.lineup is list && data.lineup.size() <= 12 && (data.lineup.size() == 0 || data.lineup[0] is string))) &&
+        (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 500)) &&
+        data.sourceName is string && data.sourceName.size() >= 2 && data.sourceName.size() <= 120 &&
+        (!('sourceUrl' in data) || (data.sourceUrl is string && data.sourceUrl.size() <= 400)) &&
+        (!('lastVerifiedAt' in data) || (data.lastVerifiedAt is string && data.lastVerifiedAt.size() <= 40)) &&
+        data.isVerified is bool &&
+        data.isDemoExample is bool &&
+        data.isSponsored is bool &&
+        data.isFeatured is bool &&
+        data.status in ['draft', 'pending', 'published', 'rejected', 'cancelled', 'ended'] &&
+        isValidId(data.organizerId) &&
+        data.organizerName is string && data.organizerName.size() >= 2 && data.organizerName.size() <= 120 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidVenue(data, venueId) {
+      return data.keys().hasAll(['id', 'slug', 'name', 'category', 'environmentType', 'neighborhood', 'address', 'priceRange', 'hoursVerified', 'description', 'sourceName', 'isDemoExample', 'status', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'slug', 'name', 'category', 'environmentType', 'neighborhood', 'address', 'lat', 'lng', 'priceRange', 'musicStyle', 'hoursSummary', 'hoursVerified', 'description', 'imageUrl', 'instagramUrl', 'websiteUrl', 'sourceName', 'lastVerifiedAt', 'isDemoExample', 'status', 'createdAt', 'updatedAt']) &&
+        data.id == venueId &&
+        isValidId(data.id) &&
+        data.slug is string && data.slug.size() >= 2 && data.slug.size() <= 140 && data.slug.matches('^[a-z0-9\\-]+$') &&
+        data.name is string && data.name.size() >= 2 && data.name.size() <= 120 &&
+        data.category is string && data.category.size() >= 2 && data.category.size() <= 60 &&
+        data.environmentType is string && data.environmentType.size() >= 2 && data.environmentType.size() <= 60 &&
+        data.neighborhood is string && data.neighborhood.size() >= 2 && data.neighborhood.size() <= 80 &&
+        data.address is string && data.address.size() >= 4 && data.address.size() <= 200 &&
+        (!('lat' in data) || (data.lat is number && data.lat >= -90 && data.lat <= 90)) &&
+        (!('lng' in data) || (data.lng is number && data.lng >= -180 && data.lng <= 180)) &&
+        data.priceRange in ['$', '$$', '$$$', 'Não informado'] &&
+        (!('musicStyle' in data) || (data.musicStyle is string && data.musicStyle.size() <= 120)) &&
+        (!('hoursSummary' in data) || (data.hoursSummary is string && data.hoursSummary.size() <= 200)) &&
+        data.hoursVerified is bool &&
+        data.description is string && data.description.size() >= 10 && data.description.size() <= 2000 &&
+        (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 500)) &&
+        (!('instagramUrl' in data) || (data.instagramUrl is string && data.instagramUrl.size() <= 300)) &&
+        (!('websiteUrl' in data) || (data.websiteUrl is string && data.websiteUrl.size() <= 300)) &&
+        data.sourceName is string && data.sourceName.size() >= 2 && data.sourceName.size() <= 120 &&
+        (!('lastVerifiedAt' in data) || (data.lastVerifiedAt is string && data.lastVerifiedAt.size() <= 40)) &&
+        data.isDemoExample is bool &&
+        data.status in ['published', 'hidden'] &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidFavorite(data) {
+      return data.keys().hasAll(['userId', 'targetType', 'targetId', 'title', 'createdAt']) &&
+        data.keys().hasOnly(['userId', 'targetType', 'targetId', 'title', 'createdAt']) &&
+        data.userId == request.auth.uid &&
+        isValidId(data.userId) &&
+        data.targetType in ['event', 'venue'] &&
+        isValidId(data.targetId) &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 140 &&
+        data.createdAt is timestamp;
+    }
+
+    function isValidPollList(data, listId) {
+      return data.keys().hasAll(['id', 'title', 'creatorId', 'creatorName', 'options', 'isOpen', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'title', 'description', 'creatorId', 'creatorName', 'options', 'isOpen', 'createdAt', 'updatedAt']) &&
+        data.id == listId &&
+        isValidId(data.id) &&
+        data.title is string && data.title.size() >= 3 && data.title.size() <= 120 &&
+        (!('description' in data) || (data.description is string && data.description.size() <= 400)) &&
+        isValidId(data.creatorId) &&
+        data.creatorName is string && data.creatorName.size() >= 1 && data.creatorName.size() <= 100 &&
+        data.options is list && data.options.size() >= 2 && data.options.size() <= 8 &&
+        data.options[0] is map &&
+        data.isOpen is bool &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidPollVote(data, voteId) {
+      return data.keys().hasAll(['voterId', 'voterLabel', 'optionId', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['voterId', 'voterLabel', 'optionId', 'createdAt', 'updatedAt']) &&
+        data.voterId == voteId &&
+        isValidId(data.voterId) &&
+        data.voterId.size() >= 8 &&
+        data.voterLabel is string && data.voterLabel.size() >= 1 && data.voterLabel.size() <= 60 &&
+        isValidId(data.optionId) &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidVenueReview(data) {
+      return data.keys().hasAll(['venueId', 'authorId', 'authorName', 'rating', 'comment', 'status', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['venueId', 'authorId', 'authorName', 'rating', 'comment', 'status', 'createdAt', 'updatedAt']) &&
+        isValidId(data.venueId) &&
+        isValidId(data.authorId) &&
+        data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 80 &&
+        data.rating is int && data.rating >= 1 && data.rating <= 5 &&
+        data.comment is string && data.comment.size() >= 10 && data.comment.size() <= 500 &&
+        data.status in ['pending', 'approved', 'rejected'] &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidReport(data) {
+      return data.keys().hasAll(['targetType', 'targetId', 'reason', 'reporterId', 'status', 'createdAt']) &&
+        data.keys().hasOnly(['targetType', 'targetId', 'reason', 'reporterId', 'status', 'createdAt']) &&
+        data.targetType in ['event', 'venue', 'review'] &&
+        isValidId(data.targetId) &&
+        data.reason is string && data.reason.size() >= 5 && data.reason.size() <= 400 &&
+        isValidId(data.reporterId) &&
+        data.status in ['open', 'resolved', 'dismissed'] &&
+        data.createdAt is timestamp;
+    }
+
+    function isValidCategory(data, categoryId) {
+      return data.keys().hasAll(['id', 'label', 'active', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'label', 'tagline', 'active', 'updatedAt']) &&
+        data.id == categoryId &&
+        data.id is string && data.id.size() >= 2 && data.id.size() <= 60 && data.id.matches('^[a-z0-9\\-]+$') &&
+        data.label is string && data.label.size() >= 2 && data.label.size() <= 60 &&
+        (!('tagline' in data) || (data.tagline is string && data.tagline.size() <= 140)) &&
+        data.active is bool &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidNeighborhood(data, neighborhoodId) {
+      return data.keys().hasAll(['id', 'name', 'editorialSummary', 'active', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'name', 'editorialSummary', 'vibeTag', 'active', 'updatedAt']) &&
+        data.id == neighborhoodId &&
+        data.id is string && data.id.size() >= 2 && data.id.size() <= 60 && data.id.matches('^[a-z0-9\\-]+$') &&
+        data.name is string && data.name.size() >= 2 && data.name.size() <= 80 &&
+        data.editorialSummary is string && data.editorialSummary.size() >= 5 && data.editorialSummary.size() <= 400 &&
+        (!('vibeTag' in data) || (data.vibeTag is string && data.vibeTag.size() <= 80)) &&
+        data.active is bool &&
+        data.updatedAt is timestamp;
+    }
+
+    // --- Collection Rules ---
+    match /test/{docId} {
+      allow get: if docId == 'connection';
+    }
+
+    match /admins/{uid} {
+      allow get: if isValidId(uid) && (isOwner(uid) || isAdmin());
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin() && isValidId(uid);
+    }
+
+    match /users/{userId} {
+      allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isVerifiedUser() &&
+        isValidId(userId) &&
+        isOwner(userId) &&
+        isValidUser(incoming(), userId) &&
+        incoming().role == 'user' &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser() &&
+        isValidId(userId) &&
+        isValidUser(incoming(), userId) &&
+        incoming().uid == existing().uid &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          isAdmin() ||
+          (
+            isOwner(userId) &&
+            incoming().role == existing().role &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'favoriteCategories', 'favoriteNeighborhoods', 'updatedAt'])
+          )
+        );
+      allow delete: if isAdmin() && isValidId(userId);
+    }
+
+    match /organizerProfiles/{userId} {
+      allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isVerifiedUser() &&
+        isValidId(userId) &&
+        isOwner(userId) &&
+        isValidOrganizerProfile(incoming(), userId) &&
+        incoming().verificationStatus == 'pending' &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser() &&
+        isValidId(userId) &&
+        isValidOrganizerProfile(incoming(), userId) &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          isAdmin() ||
+          (
+            isOwner(userId) &&
+            incoming().verificationStatus == existing().verificationStatus &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['orgName', 'bio', 'instagram', 'website', 'contactEmail', 'updatedAt'])
+          )
+        );
+      allow delete: if isAdmin() && isValidId(userId);
+    }
+
+    match /events/{eventId} {
+      allow get: if isValidId(eventId) && (
+        existing().status in ['published', 'cancelled'] ||
+        (isSignedIn() && existing().organizerId == request.auth.uid) ||
+        isAdmin()
+      );
+      allow list: if (
+        resource.data.status in ['published', 'cancelled'] ||
+        (isSignedIn() && resource.data.organizerId == request.auth.uid) ||
+        isAdmin()
+      );
+      allow create: if isVerifiedUser() &&
+        isValidId(eventId) &&
+        isValidEvent(incoming(), eventId) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        (
+          isAdmin() ||
+          (
+            incoming().organizerId == request.auth.uid &&
+            incoming().status in ['draft', 'pending'] &&
+            incoming().isVerified == false &&
+            incoming().isSponsored == false &&
+            incoming().isFeatured == false
+          )
+        );
+      allow update: if isVerifiedUser() &&
+        isValidId(eventId) &&
+        isValidEvent(incoming(), eventId) &&
+        incoming().id == existing().id &&
+        incoming().organizerId == existing().organizerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          isAdmin() ||
+          (
+            existing().organizerId == request.auth.uid &&
+            !(existing().status in ['rejected', 'ended']) &&
+            incoming().isVerified == existing().isVerified &&
+            incoming().isSponsored == existing().isSponsored &&
+            incoming().isFeatured == existing().isFeatured &&
+            (
+              (
+                incoming().status in ['draft', 'pending'] &&
+                incoming().diff(existing()).affectedKeys().hasOnly(['title', 'subtitle', 'description', 'category', 'dateISO', 'startTime', 'endTime', 'neighborhood', 'venueName', 'address', 'lat', 'lng', 'priceType', 'priceMin', 'priceLabel', 'ageRating', 'ticketUrl', 'lineup', 'imageUrl', 'sourceName', 'sourceUrl', 'status', 'organizerName', 'updatedAt'])
+              ) ||
+              (
+                incoming().status == 'cancelled' &&
+                incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])
+              )
+            )
+          )
+        );
+      allow delete: if isAdmin() && isValidId(eventId);
+    }
+
+    match /venues/{venueId} {
+      allow get: if isValidId(venueId) && (existing().status == 'published' || isAdmin());
+      allow list: if resource.data.status == 'published' || isAdmin();
+      allow create: if isAdmin() &&
+        isValidId(venueId) &&
+        isValidVenue(incoming(), venueId) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isAdmin() &&
+        isValidId(venueId) &&
+        isValidVenue(incoming(), venueId) &&
+        incoming().id == existing().id &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time;
+      allow delete: if isAdmin() && isValidId(venueId);
+    }
+
+    match /favorites/{favoriteId} {
+      allow get: if isValidId(favoriteId) && isSignedIn() && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isVerifiedUser() &&
+        isValidId(favoriteId) &&
+        isValidFavorite(incoming()) &&
+        incoming().createdAt == request.time;
+      allow delete: if isVerifiedUser() &&
+        isValidId(favoriteId) &&
+        existing().userId == request.auth.uid;
+    }
+
+    match /pollLists/{listId} {
+      allow get: if isValidId(listId);
+      allow list: if isSignedIn() && (resource.data.creatorId == request.auth.uid || isAdmin());
+      allow create: if isVerifiedUser() &&
+        isValidId(listId) &&
+        isValidPollList(incoming(), listId) &&
+        incoming().creatorId == request.auth.uid &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser() &&
+        isValidId(listId) &&
+        isValidPollList(incoming(), listId) &&
+        incoming().id == existing().id &&
+        incoming().creatorId == existing().creatorId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          isAdmin() ||
+          (
+            existing().creatorId == request.auth.uid &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['title', 'description', 'options', 'isOpen', 'updatedAt'])
+          )
+        );
+      allow delete: if isValidId(listId) && (isAdmin() || (isVerifiedUser() && existing().creatorId == request.auth.uid));
+
+      match /votes/{voteId} {
+        allow get: if isValidId(listId) && isValidId(voteId);
+        allow list: if isValidId(listId) && resource.data.optionId is string;
+        allow create: if isValidId(listId) &&
+          isValidId(voteId) &&
+          isValidPollVote(incoming(), voteId) &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time &&
+          exists(/databases/$(database)/documents/pollLists/$(listId)) &&
+          get(/databases/$(database)/documents/pollLists/$(listId)).data.isOpen == true;
+        allow update: if isValidId(listId) &&
+          isValidId(voteId) &&
+          isValidPollVote(incoming(), voteId) &&
+          incoming().voterId == existing().voterId &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().updatedAt == request.time &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['optionId', 'voterLabel', 'updatedAt']) &&
+          exists(/databases/$(database)/documents/pollLists/$(listId)) &&
+          get(/databases/$(database)/documents/pollLists/$(listId)).data.isOpen == true;
+      }
+    }
+
+    match /venueReviews/{reviewId} {
+      allow get: if isValidId(reviewId) && (
+        existing().status == 'approved' ||
+        (isSignedIn() && existing().authorId == request.auth.uid) ||
+        isAdmin()
+      );
+      allow list: if (
+        resource.data.status == 'approved' ||
+        (isSignedIn() && resource.data.authorId == request.auth.uid) ||
+        isAdmin()
+      );
+      allow create: if isVerifiedUser() &&
+        isValidId(reviewId) &&
+        isValidVenueReview(incoming()) &&
+        incoming().authorId == request.auth.uid &&
+        incoming().status == 'pending' &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        exists(/databases/$(database)/documents/venues/$(incoming().venueId));
+      allow update: if isAdmin() &&
+        isValidId(reviewId) &&
+        isValidVenueReview(incoming()) &&
+        incoming().venueId == existing().venueId &&
+        incoming().authorId == existing().authorId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']);
+      allow delete: if isAdmin() && isValidId(reviewId);
+    }
+
+    match /reports/{reportId} {
+      allow get, list: if isAdmin();
+      allow create: if isVerifiedUser() &&
+        isValidId(reportId) &&
+        isValidReport(incoming()) &&
+        incoming().reporterId == request.auth.uid &&
+        incoming().status == 'open' &&
+        incoming().createdAt == request.time;
+      allow update: if isAdmin() &&
+        isValidId(reportId) &&
+        isValidReport(incoming()) &&
+        incoming().reporterId == existing().reporterId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['status']);
+      allow delete: if isAdmin() && isValidId(reportId);
+    }
+
+    match /categories/{categoryId} {
+      allow get: if isValidId(categoryId);
+      allow list: if resource.data.active is bool;
+      allow create, update: if isAdmin() &&
+        isValidId(categoryId) &&
+        isValidCategory(incoming(), categoryId) &&
+        incoming().updatedAt == request.time;
+      allow delete: if isAdmin() && isValidId(categoryId);
+    }
+
+    match /neighborhoods/{neighborhoodId} {
+      allow get: if isValidId(neighborhoodId);
+      allow list: if resource.data.active is bool;
+      allow create, update: if isAdmin() &&
+        isValidId(neighborhoodId) &&
+        isValidNeighborhood(incoming(), neighborhoodId) &&
+        incoming().updatedAt == request.time;
+      allow delete: if isAdmin() && isValidId(neighborhoodId);
+    }
+  }
+}

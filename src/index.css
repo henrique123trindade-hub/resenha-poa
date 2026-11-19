@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+:root {
+  --bg-deep: #080808;
+  --bg-surface: #141414;
+  --bg-elevated: #1E1E1E;
+  --ink-white: #F4F4F2;
+  --ink-muted: #858585;
+  --border-dark: #292929;
+  --border-light: #D8D8D4;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--bg-deep);
+  color: var(--ink-white);
+  font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-deep);
+  color: var(--ink-white);
+  overflow-x: hidden;
+}
+
+.font-display,
+.font-editorial,
+.font-poster {
+  font-family: 'Barlow Condensed', 'Instrument Sans', sans-serif;
+}
+
+.font-label {
+  font-family: 'Instrument Sans', system-ui, sans-serif;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Subtle analog film grain texture overlay for editorial photography and hero surfaces */
+.film-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");
+}
+
+/* Editorial B&W photo treatment strictly for campaign / demo photography */
+.bw-editorial-photo {
+  filter: grayscale(100%) contrast(1.12) brightness(0.96);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid #F4F4F2;
+  outline-offset: 2px;
+}

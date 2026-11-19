@@ -1,0 +1,10 @@
+{
+  "name": "ResenhaPOA",
+  "description": "O teu próximo rolê começa aqui. Descubra festas, bares, shows, festivais e programação cultural em Porto Alegre — RS.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

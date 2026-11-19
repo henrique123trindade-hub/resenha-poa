@@ -1,0 +1,256 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Authenticated ResenhaPOA user profile and preferences.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "email": { "type": "string", "format": "email", "maxLength": 200 },
+        "photoURL": { "type": "string", "maxLength": 500 },
+        "role": { "type": "string", "enum": ["user", "organizer", "admin"] },
+        "favoriteCategories": { "type": "array", "description": "Up to 11 music/outing category IDs." },
+        "favoriteNeighborhoods": { "type": "array", "description": "Up to 8 POA neighborhood IDs." },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "displayName", "email", "role", "createdAt", "updatedAt"]
+    },
+    "OrganizerProfile": {
+      "title": "OrganizerProfile",
+      "description": "Profile for event organizers and cultural producers in Porto Alegre.",
+      "type": "object",
+      "properties": {
+        "ownerId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "orgName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "bio": { "type": "string", "maxLength": 600 },
+        "instagram": { "type": "string", "maxLength": 120 },
+        "website": { "type": "string", "maxLength": 300 },
+        "contactEmail": { "type": "string", "format": "email", "maxLength": 200 },
+        "verificationStatus": { "type": "string", "enum": ["pending", "verified", "rejected"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ownerId", "orgName", "contactEmail", "verificationStatus", "createdAt", "updatedAt"]
+    },
+    "Event": {
+      "title": "Event",
+      "description": "Event, party, concert, or cultural outing in Porto Alegre.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "slug": { "type": "string", "minLength": 2, "maxLength": 140, "pattern": "^[a-z0-9\\-]+$" },
+        "title": { "type": "string", "minLength": 3, "maxLength": 120 },
+        "subtitle": { "type": "string", "maxLength": 200 },
+        "description": { "type": "string", "minLength": 10, "maxLength": 3000 },
+        "category": { "type": "string", "enum": ["funk", "eletronica", "pagode-samba", "sertanejo", "rock-indie", "hip-hop", "pop", "bares", "shows", "cultura", "gratuitos"] },
+        "dateISO": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "maxLength": 10 },
+        "startTime": { "type": "string", "pattern": "^\\d{2}:\\d{2}$", "maxLength": 5 },
+        "endTime": { "type": "string", "maxLength": 5 },
+        "neighborhood": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "venueName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "address": { "type": "string", "minLength": 4, "maxLength": 200 },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "priceType": { "type": "string", "enum": ["free", "paid", "unconfirmed"] },
+        "priceMin": { "type": "number" },
+        "priceLabel": { "type": "string", "maxLength": 80 },
+        "ageRating": { "type": "string", "enum": ["Livre", "16+", "18+", "Não informado"] },
+        "ticketUrl": { "type": "string", "maxLength": 400 },
+        "lineup": { "type": "array", "description": "Up to 12 confirmed artists or attractions." },
+        "imageUrl": { "type": "string", "maxLength": 500 },
+        "sourceName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "sourceUrl": { "type": "string", "maxLength": 400 },
+        "lastVerifiedAt": { "type": "string", "maxLength": 40 },
+        "isVerified": { "type": "boolean" },
+        "isDemoExample": { "type": "boolean" },
+        "isSponsored": { "type": "boolean" },
+        "isFeatured": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["draft", "pending", "published", "rejected", "cancelled", "ended"] },
+        "organizerId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "organizerName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "slug", "title", "description", "category", "dateISO", "startTime", "neighborhood", "venueName", "address", "priceType", "ageRating", "sourceName", "isVerified", "isDemoExample", "isSponsored", "isFeatured", "status", "organizerId", "organizerName", "createdAt", "updatedAt"]
+    },
+    "Venue": {
+      "title": "Venue",
+      "description": "Bar, pub, or cultural venue in Porto Alegre.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "slug": { "type": "string", "minLength": 2, "maxLength": 140, "pattern": "^[a-z0-9\\-]+$" },
+        "name": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "category": { "type": "string", "minLength": 2, "maxLength": 60 },
+        "environmentType": { "type": "string", "minLength": 2, "maxLength": 60 },
+        "neighborhood": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "address": { "type": "string", "minLength": 4, "maxLength": 200 },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "priceRange": { "type": "string", "enum": ["$", "$$", "$$$", "Não informado"] },
+        "musicStyle": { "type": "string", "maxLength": 120 },
+        "hoursSummary": { "type": "string", "maxLength": 200 },
+        "hoursVerified": { "type": "boolean" },
+        "description": { "type": "string", "minLength": 10, "maxLength": 2000 },
+        "imageUrl": { "type": "string", "maxLength": 500 },
+        "instagramUrl": { "type": "string", "maxLength": 300 },
+        "websiteUrl": { "type": "string", "maxLength": 300 },
+        "sourceName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "lastVerifiedAt": { "type": "string", "maxLength": 40 },
+        "isDemoExample": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["published", "hidden"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "slug", "name", "category", "environmentType", "neighborhood", "address", "priceRange", "hoursVerified", "description", "sourceName", "isDemoExample", "status", "createdAt", "updatedAt"]
+    },
+    "Favorite": {
+      "title": "Favorite",
+      "description": "Saved event or venue belonging to a user.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "targetType": { "type": "string", "enum": ["event", "venue"] },
+        "targetId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "targetType", "targetId", "title", "createdAt"]
+    },
+    "PollList": {
+      "title": "PollList",
+      "description": "Shareable Bora Junto outing list where friends can vote on options.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "minLength": 3, "maxLength": 120 },
+        "description": { "type": "string", "maxLength": 400 },
+        "creatorId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "creatorName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "options": { "type": "array", "description": "Up to 8 candidate event/venue options." },
+        "isOpen": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "creatorId", "creatorName", "options", "isOpen", "createdAt", "updatedAt"]
+    },
+    "PollVote": {
+      "title": "PollVote",
+      "description": "Single vote in a Bora Junto poll list (one vote per voterId).",
+      "type": "object",
+      "properties": {
+        "voterId": { "type": "string", "minLength": 4, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "voterLabel": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "optionId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["voterId", "voterLabel", "optionId", "createdAt", "updatedAt"]
+    },
+    "VenueReview": {
+      "title": "VenueReview",
+      "description": "Moderated user review for a Porto Alegre venue.",
+      "type": "object",
+      "properties": {
+        "venueId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "authorId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "authorName": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "rating": { "type": "integer" },
+        "comment": { "type": "string", "minLength": 10, "maxLength": 500 },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["venueId", "authorId", "authorName", "rating", "comment", "status", "createdAt", "updatedAt"]
+    },
+    "Report": {
+      "title": "Report",
+      "description": "Content or event moderation report submitted by a user.",
+      "type": "object",
+      "properties": {
+        "targetType": { "type": "string", "enum": ["event", "venue", "review"] },
+        "targetId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "reason": { "type": "string", "minLength": 5, "maxLength": 400 },
+        "reporterId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "status": { "type": "string", "enum": ["open", "resolved", "dismissed"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["targetType", "targetId", "reason", "reporterId", "status", "createdAt"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Manageable outing or music category.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 2, "maxLength": 60, "pattern": "^[a-z0-9\\-]+$" },
+        "label": { "type": "string", "minLength": 2, "maxLength": 60 },
+        "tagline": { "type": "string", "maxLength": 140 },
+        "active": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "label", "active", "updatedAt"]
+    },
+    "Neighborhood": {
+      "title": "Neighborhood",
+      "description": "Manageable Porto Alegre neighborhood editorial entry.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 2, "maxLength": 60, "pattern": "^[a-z0-9\\-]+$" },
+        "name": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "editorialSummary": { "type": "string", "minLength": 5, "maxLength": 400 },
+        "vibeTag": { "type": "string", "maxLength": 80 },
+        "active": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "editorialSummary", "active", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Private user account profiles and preferences."
+    },
+    "/organizerProfiles/{userId}": {
+      "schema": { "$ref": "#/entities/OrganizerProfile" },
+      "description": "Organizer profiles awaiting or holding verification."
+    },
+    "/events/{eventId}": {
+      "schema": { "$ref": "#/entities/Event" },
+      "description": "Porto Alegre events catalog with publication status."
+    },
+    "/venues/{venueId}": {
+      "schema": { "$ref": "#/entities/Venue" },
+      "description": "Porto Alegre bars, pubs, and cultural venues."
+    },
+    "/favorites/{favoriteId}": {
+      "schema": { "$ref": "#/entities/Favorite" },
+      "description": "User saved events and venues."
+    },
+    "/pollLists/{listId}": {
+      "schema": { "$ref": "#/entities/PollList" },
+      "description": "Shareable Bora Junto outing polls."
+    },
+    "/pollLists/{listId}/votes/{voteId}": {
+      "schema": { "$ref": "#/entities/PollVote" },
+      "description": "Individual votes inside a Bora Junto poll."
+    },
+    "/venueReviews/{reviewId}": {
+      "schema": { "$ref": "#/entities/VenueReview" },
+      "description": "Moderated user reviews for bars and venues."
+    },
+    "/reports/{reportId}": {
+      "schema": { "$ref": "#/entities/Report" },
+      "description": "User-submitted moderation reports."
+    },
+    "/categories/{categoryId}": {
+      "schema": { "$ref": "#/entities/Category" },
+      "description": "Manageable outing categories."
+    },
+    "/neighborhoods/{neighborhoodId}": {
+      "schema": { "$ref": "#/entities/Neighborhood" },
+      "description": "Manageable Porto Alegre neighborhoods."
+    }
+  }
+}
