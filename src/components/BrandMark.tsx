@@ -4,40 +4,30 @@ export const BrandWordmark: React.FC<{
   size?: 'sm' | 'md' | 'lg';
   tone?: 'on-dark' | 'on-light';
 }> = ({ size = 'md', tone = 'on-dark' }) => {
-  const sizeClass =
+  const heightClass =
     size === 'sm'
-      ? 'text-xl'
+      ? 'h-7 sm:h-8'
       : size === 'lg'
-        ? 'text-3xl sm:text-4xl'
-        : 'text-2xl sm:text-[26px]';
-
-  const onDark = tone === 'on-dark';
+        ? 'h-11 sm:h-12'
+        : 'h-9 sm:h-10';
 
   return (
-    <span
-      className={`relative inline-flex items-center font-display font-extrabold italic uppercase tracking-[-0.025em] leading-none select-none whitespace-nowrap shrink-0 ${sizeClass} ${
-        onDark ? 'text-[#F7F7F5]' : 'text-[#101012]'
-      }`}
-    >
-      <span>RESENHA</span>
-      <span
-        className={`ml-1 px-1.5 py-0.5 not-italic rounded-[3px] leading-none ${
-          onDark ? 'bg-[#F7F7F5] text-[#101012]' : 'bg-[#101012] text-[#F7F7F5]'
-        }`}
-      >
-        POA
-      </span>
-      <svg
-        viewBox="0 0 14 14"
-        fill="none"
-        aria-hidden="true"
-        className="w-2.5 h-2.5 ml-1 -mt-3 text-[#FF5A36] shrink-0"
-      >
-        <path
-          d="M7 0.5L8.4 5.2L13.5 7L8.4 8.8L7 13.5L5.6 8.8L0.5 7L5.6 5.2L7 0.5Z"
-          fill="currentColor"
+    <span className="inline-flex items-center select-none shrink-0">
+      <picture className="inline-flex items-center">
+        <source srcSet="/assets/brand/resenhapoa-logo.webp" type="image/webp" />
+        <img
+          src="/assets/brand/resenhapoa-logo.png"
+          alt="ResenhaPOA"
+          width={916}
+          height={300}
+          loading="eager"
+          decoding="sync"
+          draggable={false}
+          className={`${heightClass} w-auto object-contain block ${
+            tone === 'on-light' ? 'invert' : ''
+          }`}
         />
-      </svg>
+      </picture>
     </span>
   );
 };
