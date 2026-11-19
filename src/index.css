@@ -72,3 +72,50 @@ body {
   outline: 2px solid #F4F4F2;
   outline-offset: 2px;
 }
+
+/* Monochrome Leaflet dark map overrides (ResenhaPOA Nightlife B&W) */
+.resenha-leaflet-map.leaflet-container {
+  background-color: #080808;
+  font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+  color: #F4F4F2;
+}
+
+.resenha-leaflet-map .leaflet-tile-pane {
+  filter: invert(100%) grayscale(100%) contrast(1.08) brightness(0.88);
+}
+
+.resenha-leaflet-map .leaflet-control-attribution {
+  background: rgba(8, 8, 8, 0.82) !important;
+  color: #858585 !important;
+  font-size: 10px !important;
+  padding: 2px 8px !important;
+  border-top-left-radius: 4px;
+}
+
+.resenha-leaflet-map .leaflet-control-attribution a {
+  color: #B5B5B2 !important;
+}
+
+.resenha-map-tooltip.leaflet-tooltip {
+  background-color: #141414;
+  color: #F4F4F2;
+  border: 1px solid #292929;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-family: 'Instrument Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+}
+
+.resenha-map-tooltip.leaflet-tooltip-top::before {
+  border-top-color: #292929;
+}
+
+.resenha-pin-icon {
+  background: transparent;
+  border: none;
+}
+
