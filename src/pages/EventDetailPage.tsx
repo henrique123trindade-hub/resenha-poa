@@ -19,6 +19,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { CAMPAIGN_PHOTOS, CATEGORIES } from '../data/seedCatalog';
 import { formatEventDatePtBr, formatIsoDateFullPtBr } from '../utils/datePoa';
 import { getNightlifeSrcSet } from '../utils/responsiveImage';
+import { buildEventJsonLd, useDocumentHead } from '../utils/seoHead';
 import { toggleFavoriteInFirestore, submitReport } from '../services/firestoreService';
 import { PoaMapView } from '../components/PoaMapView';
 import { EventCard } from '../components/EventCard';
@@ -36,9 +37,18 @@ export const EventDetailPage: React.FC = () => {
   const [reportReason, setReportReason] = useState('');
   const [reportBusy, setReportBusy] = useState(false);
 
+  const pageUrl = typeof window !== 'undefined' ? window.location.href : '';
+  useDocumentHead({
+    title: event ? `${event.title} · ${event.neighborhood} — ResenhaPOA` : 'Evento não encontrado — ResenhaPOA',
+    description: event
+      ? `${event.title} em ${event.venueName} (${event.neighborhood}, Porto Alegre) · ${formatEventDatePtBr(event.dateISO)} às ${event.startTime}.`
+      : 'Agenda de festas, shows e eventos em Porto Alegre.',
+    jsonLd: event ? buildEventJsonLd(event, pageUrl) : null,
+  });
+
   if (!event) {
     return (
-      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center space-y-5 text-[#F7F7F5]">
+      <div className="max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 py-20 text-center space-y-5 text-[#F7F7F5]">
         <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#98989F]">
           Evento não localizado
         </p>
@@ -141,7 +151,7 @@ export const EventDetailPage: React.FC = () => {
     .slice(0, 3);
 
   return (
-    <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 text-[#F7F7F5]">
+    <div className="max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 py-8 sm:py-12 text-[#F7F7F5]">
       <Link
         to="/eventos"
         className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#98989F] hover:text-[#F7F7F5] mb-6 transition-colors"
@@ -193,7 +203,7 @@ export const EventDetailPage: React.FC = () => {
                   {catLabel}
                 </span>
                 {isFree && (
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-[#D5FF52] text-[#101012]">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-[#F7F7F5] text-[#101012]">
                     Grátis
                   </span>
                 )}
@@ -211,10 +221,10 @@ export const EventDetailPage: React.FC = () => {
                     <span className="text-[#FF5A36] font-semibold">Conteúdo patrocinado</span>
                   </>
                 )}
-                {event.isVerified && (
+                {event.isVerified && !event.isDemoExample && (
                   <>
                     <span aria-hidden="true">·</span>
-                    <span className="inline-flex items-center gap-1 text-[#D5FF52] font-semibold">
+                    <span className="inline-flex items-center gap-1 text-[#34D399] font-semibold">
                       <ShieldCheck className="w-3.5 h-3.5" /> Fonte verificada
                     </span>
                   </>
@@ -374,7 +384,7 @@ export const EventDetailPage: React.FC = () => {
               </p>
               <p
                 className={`font-display text-3xl font-extrabold italic uppercase tabular-nums ${
-                  isFree ? 'text-[#D5FF52]' : 'text-[#F7F7F5]'
+                  isFree ? 'text-[#FF5A36]' : 'text-[#F7F7F5]'
                 }`}
               >
                 {priceText}

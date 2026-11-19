@@ -45,6 +45,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [exploreOpen, setExploreOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [headerScrolled, setHeaderScrolled] = useState(false);
   const [quickQuery, setQuickQuery] = useState('');
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(false);
@@ -60,13 +61,33 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   }, [location.pathname, location.search]);
 
   useEffect(() => {
+    const onScroll = () => {
+      setHeaderScrolled(window.scrollY > 12);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
       if (exploreRef.current && !exploreRef.current.contains(e.target as Node)) {
         setExploreOpen(false);
       }
     };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setExploreOpen(false);
+        setSearchOpen(false);
+        setMobileMenuOpen(false);
+      }
+    };
     document.addEventListener('mousedown', onDocClick);
-    return () => document.removeEventListener('mousedown', onDocClick);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onDocClick);
+      document.removeEventListener('keydown', onKeyDown);
+    };
   }, []);
 
   const notify = useCallback((msg: string) => {
@@ -100,20 +121,31 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   };
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `text-sm font-medium whitespace-nowrap shrink-0 transition-colors py-1.5 border-b-2 ${
+    `relative text-sm font-medium whitespace-nowrap shrink-0 transition-colors py-1.5 border-b-2 ${
       isActive
         ? 'text-[#F7F7F5] border-[#FF5A36]'
-        : 'text-[#98989F] border-transparent hover:text-[#F7F7F5]'
+        : 'text-[#98989F] border-transparent hover:text-[#F7F7F5] hover:border-[#28282E]'
     }`;
 
   return (
     <ToastContext.Provider value={{ notify }}>
       <div id="top" className="min-h-screen flex flex-col bg-[#101012] text-[#F7F7F5]">
-        {/* ResenhaPOA 2.0 Compact Nightlife Header */}
-        <header className="sticky top-0 z-40 bg-[#101012]/95 backdrop-blur-md text-[#F7F7F5] border-b border-[#28282E]">
-          <div className="max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
+        {/* ResenhaPOA Compact Sticky Nightlife Header */}
+        <header
+          className={`sticky top-0 z-40 text-[#F7F7F5] border-b transition-all duration-200 ${
+            headerScrolled
+              ? 'bg-[#101012]/96 backdrop-blur-lg border-[#28282E] shadow-[0_10px_30px_rgba(0,0,0,0.45)]'
+              : 'bg-[#101012]/90 backdrop-blur-md border-[#28282E]/70'
+          }`}
+        >
+          <div className="max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-4 lg:gap-6">
             {/* Zone 1: Brand Wordmark */}
-            <Link to="/" aria-label="ResenhaPOA, página inicial" className="shrink-0">
+            <Link
+              to="/"
+              onClick={scrollToTopInstant}
+              aria-label="ResenhaPOA, página inicial"
+              className="shrink-0 flex items-center"
+            >
               <BrandWordmark size="md" tone="on-dark" />
             </Link>
 
@@ -138,10 +170,11 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   type="button"
                   onClick={() => setExploreOpen((v) => !v)}
                   aria-expanded={exploreOpen}
-                  className={`inline-flex items-center gap-1 text-sm font-medium py-1.5 border-b-2 transition-colors whitespace-nowrap shrink-0 ${
+                  aria-haspopup="menu"
+                  className={`inline-flex items-center gap-1.5 text-sm font-medium py-1.5 border-b-2 transition-colors whitespace-nowrap shrink-0 ${
                     exploreOpen
                       ? 'text-[#F7F7F5] border-[#FF5A36]'
-                      : 'text-[#98989F] border-transparent hover:text-[#F7F7F5]'
+                      : 'text-[#98989F] border-transparent hover:text-[#F7F7F5] hover:border-[#28282E]'
                   }`}
                 >
                   <span>Explorar</span>
@@ -151,9 +184,13 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 </button>
 
                 {exploreOpen && (
-                  <div className="absolute left-0 top-full mt-3 w-72 bg-[#1C1C20] text-[#F7F7F5] border border-[#28282E] rounded-xl shadow-2xl p-2 z-50">
+                  <div
+                    role="menu"
+                    className="motion-safe:animate-menu-in absolute left-0 top-full mt-3 w-72 bg-[#1C1C20] text-[#F7F7F5] border border-[#28282E] rounded-xl shadow-2xl p-2 z-50"
+                  >
                     <Link
                       to="/mapa"
+                      role="menuitem"
                       className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-[#25252B] transition-colors"
                     >
                       <MapPin className="w-4 h-4 text-[#5265FF] shrink-0 mt-0.5" />
@@ -166,6 +203,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     </Link>
                     <Link
                       to="/bora-junto"
+                      role="menuitem"
                       className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-[#25252B] transition-colors"
                     >
                       <Users className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" />
@@ -178,9 +216,10 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     </Link>
                     <Link
                       to="/curadoria"
+                      role="menuitem"
                       className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-[#25252B] transition-colors"
                     >
-                      <Sparkles className="w-4 h-4 text-[#D5FF52] shrink-0 mt-0.5" />
+                      <Sparkles className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" />
                       <div>
                         <span className="block text-sm font-semibold">Curadoria inteligente</span>
                         <span className="block text-xs text-[#98989F]">
@@ -191,7 +230,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     <div className="my-1.5 border-t border-[#28282E]" />
                     <Link
                       to="/sobre"
-                      className="block px-3 py-2 rounded-lg text-xs font-medium text-[#98989F] hover:text-[#F7F7F5] hover:bg-[#25252B]"
+                      role="menuitem"
+                      className="block px-3 py-2 rounded-lg text-xs font-medium text-[#98989F] hover:text-[#F7F7F5] hover:bg-[#25252B] transition-colors"
                     >
                       Sobre o ResenhaPOA
                     </Link>
@@ -204,13 +244,16 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
               <button
                 type="button"
-                onClick={() => setSearchOpen((v) => !v)}
-                aria-label="Abrir pesquisa rápida"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setSearchOpen((v) => !v);
+                }}
+                aria-label={searchOpen ? 'Fechar pesquisa rápida' : 'Abrir pesquisa rápida'}
                 aria-expanded={searchOpen}
-                className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
+                className={`w-10 h-10 sm:w-9 sm:h-9 rounded-full flex items-center justify-center border transition-colors ${
                   searchOpen
-                    ? 'bg-[#25252B] text-[#FF5A36]'
-                    : 'bg-[#1C1C20] text-[#F7F7F5] hover:bg-[#25252B]'
+                    ? 'bg-[#25252B] border-[#FF5A36]/60 text-[#FF5A36]'
+                    : 'bg-[#1C1C20] border-[#28282E] text-[#F7F7F5] hover:bg-[#25252B] hover:border-[#F7F7F5]/30'
                 }`}
               >
                 <Search className="w-4 h-4" />
@@ -221,12 +264,18 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 aria-label={
                   favorites.length > 0 ? `Favoritos (${favorites.length} salvos)` : 'Favoritos'
                 }
-                className="hidden sm:inline-flex relative w-9 h-9 rounded-full bg-[#1C1C20] hover:bg-[#25252B] text-[#F7F7F5] items-center justify-center transition-colors"
+                className="hidden sm:inline-flex relative w-9 h-9 rounded-full bg-[#1C1C20] border border-[#28282E] hover:bg-[#25252B] hover:border-[#F7F7F5]/30 text-[#F7F7F5] items-center justify-center transition-colors"
               >
                 <Heart
                   className={`w-4 h-4 ${favorites.length > 0 ? 'text-[#FF5A36]' : 'text-[#F7F7F5]'}`}
                   fill={favorites.length > 0 ? 'currentColor' : 'none'}
                 />
+                {favorites.length > 0 && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#FF5A36]"
+                  />
+                )}
                 {favorites.length > 0 && (
                   <span className="sr-only">({favorites.length})</span>
                 )}
@@ -236,7 +285,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 <Link
                   to="/perfil"
                   aria-label="Minha conta"
-                  className="hidden sm:inline-flex items-center gap-2 text-xs font-semibold px-2.5 h-9 rounded-full bg-[#1C1C20] hover:bg-[#25252B] text-[#F7F7F5] transition-colors whitespace-nowrap shrink-0"
+                  className="hidden sm:inline-flex items-center gap-2 text-xs font-semibold px-2.5 h-9 rounded-full bg-[#1C1C20] border border-[#28282E] hover:bg-[#25252B] hover:border-[#F7F7F5]/30 text-[#F7F7F5] transition-colors whitespace-nowrap shrink-0"
                 >
                   {user.photoURL ? (
                     <img
@@ -257,7 +306,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   type="button"
                   onClick={() => openAuthModal('Entre para salvar rolês e criar listas Bora Junto.')}
                   aria-label="Entrar na conta"
-                  className="hidden sm:inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#1C1C20] hover:bg-[#25252B] text-[#F7F7F5] transition-colors shrink-0"
+                  className="hidden sm:inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#1C1C20] border border-[#28282E] hover:bg-[#25252B] hover:border-[#F7F7F5]/30 text-[#F7F7F5] transition-colors shrink-0"
                 >
                   <UserIcon className="w-4 h-4" />
                 </button>
@@ -265,7 +314,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
               <Link
                 to="/organizador"
-                className="hidden md:inline-flex items-center gap-1.5 bg-[#FF5A36] hover:bg-[#FF6F4F] text-[#101012] font-bold text-xs tracking-wide px-4 h-9 rounded-full transition-colors whitespace-nowrap shrink-0"
+                className="hidden md:inline-flex items-center gap-1.5 bg-[#FF5A36] hover:bg-[#FF6F4F] active:scale-[0.98] text-[#101012] font-bold text-xs tracking-wide px-4 h-9 rounded-full transition-all whitespace-nowrap shrink-0"
               >
                 <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                 <span>Divulgar Evento</span>
@@ -273,10 +322,17 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
               <button
                 type="button"
-                onClick={() => setMobileMenuOpen((v) => !v)}
+                onClick={() => {
+                  setSearchOpen(false);
+                  setMobileMenuOpen((v) => !v);
+                }}
                 aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
                 aria-expanded={mobileMenuOpen}
-                className="lg:hidden w-10 h-10 rounded-full flex items-center justify-center text-[#F7F7F5] bg-[#1C1C20] hover:bg-[#25252B]"
+                className={`lg:hidden w-10 h-10 rounded-full flex items-center justify-center border transition-colors ${
+                  mobileMenuOpen
+                    ? 'bg-[#25252B] border-[#FF5A36]/60 text-[#FF5A36]'
+                    : 'bg-[#1C1C20] border-[#28282E] text-[#F7F7F5] hover:bg-[#25252B]'
+                }`}
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
@@ -285,10 +341,10 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
           {/* Inline Search Drawer */}
           {searchOpen && (
-            <div className="border-t border-[#28282E] bg-[#1C1C20]">
+            <div className="motion-safe:animate-menu-in border-t border-[#28282E] bg-[#1C1C20]">
               <form
                 onSubmit={handleQuickSearch}
-                className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-3"
+                className="max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 py-3 flex items-center gap-3"
               >
                 <Search className="w-4 h-4 text-[#98989F] shrink-0" />
                 <input
@@ -312,41 +368,47 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
           {/* Mobile Drawer */}
           {mobileMenuOpen && (
-            <div className="lg:hidden border-t border-[#28282E] bg-[#1C1C20] px-4 py-5 space-y-4">
+            <div className="motion-safe:animate-menu-in lg:hidden border-t border-[#28282E] bg-[#1C1C20] px-5 py-5 space-y-4">
               <nav className="grid grid-cols-2 gap-2.5" aria-label="Menu mobile">
                 <Link
                   to="/eventos"
-                  className="px-3.5 py-3 rounded-xl bg-[#101012] border border-[#28282E] text-xs font-semibold text-[#F7F7F5] flex items-center gap-2"
+                  onClick={scrollToTopInstant}
+                  className="px-3.5 py-3 min-h-[44px] rounded-xl bg-[#101012] border border-[#28282E] hover:border-[#FF5A36]/60 text-xs font-semibold text-[#F7F7F5] flex items-center gap-2 transition-colors"
                 >
                   <Calendar className="w-4 h-4 text-[#FF5A36]" /> Eventos
                 </Link>
                 <Link
                   to="/bares"
-                  className="px-3.5 py-3 rounded-xl bg-[#101012] border border-[#28282E] text-xs font-semibold text-[#F7F7F5] flex items-center gap-2"
+                  onClick={scrollToTopInstant}
+                  className="px-3.5 py-3 min-h-[44px] rounded-xl bg-[#101012] border border-[#28282E] hover:border-[#FF5A36]/60 text-xs font-semibold text-[#F7F7F5] flex items-center gap-2 transition-colors"
                 >
                   <Wine className="w-4 h-4 text-[#FF5A36]" /> Bares
                 </Link>
                 <Link
                   to="/mapa"
-                  className="px-3.5 py-3 rounded-xl bg-[#101012] border border-[#28282E] text-xs font-semibold text-[#F7F7F5] flex items-center gap-2"
+                  onClick={scrollToTopInstant}
+                  className="px-3.5 py-3 min-h-[44px] rounded-xl bg-[#101012] border border-[#28282E] hover:border-[#5265FF]/60 text-xs font-semibold text-[#F7F7F5] flex items-center gap-2 transition-colors"
                 >
                   <MapPin className="w-4 h-4 text-[#5265FF]" /> Mapa
                 </Link>
                 <Link
                   to="/bora-junto"
-                  className="px-3.5 py-3 rounded-xl bg-[#101012] border border-[#28282E] text-xs font-semibold text-[#F7F7F5] flex items-center gap-2"
+                  onClick={scrollToTopInstant}
+                  className="px-3.5 py-3 min-h-[44px] rounded-xl bg-[#101012] border border-[#28282E] hover:border-[#FF5A36]/60 text-xs font-semibold text-[#F7F7F5] flex items-center gap-2 transition-colors"
                 >
                   <Users className="w-4 h-4 text-[#FF5A36]" /> Bora Junto
                 </Link>
                 <Link
                   to="/curadoria"
-                  className="px-3.5 py-3 rounded-xl bg-[#101012] border border-[#28282E] text-xs font-semibold text-[#F7F7F5] flex items-center gap-2"
+                  onClick={scrollToTopInstant}
+                  className="px-3.5 py-3 min-h-[44px] rounded-xl bg-[#101012] border border-[#28282E] hover:border-[#FF5A36]/60 text-xs font-semibold text-[#F7F7F5] flex items-center gap-2 transition-colors"
                 >
-                  <Sparkles className="w-4 h-4 text-[#D5FF52]" /> Curadoria
+                  <Sparkles className="w-4 h-4 text-[#FF5A36]" /> Curadoria
                 </Link>
                 <Link
                   to="/organizador"
-                  className="px-3.5 py-3 rounded-xl bg-[#FF5A36] text-xs font-bold text-[#101012] flex items-center justify-center gap-1.5"
+                  onClick={scrollToTopInstant}
+                  className="px-3.5 py-3 min-h-[44px] rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] text-xs font-bold text-[#101012] flex items-center justify-center gap-1.5 transition-colors"
                 >
                   <Plus className="w-4 h-4 stroke-[2.5]" /> Divulgar Evento
                 </Link>
@@ -357,7 +419,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   <>
                     <Link
                       to="/perfil"
-                      className="text-sm font-medium text-[#F7F7F5] flex items-center gap-2"
+                      onClick={scrollToTopInstant}
+                      className="text-sm font-medium text-[#F7F7F5] flex items-center gap-2 min-h-[44px]"
                     >
                       <UserIcon className="w-4 h-4 text-[#98989F]" />
                       {user.displayName || user.email}
@@ -365,7 +428,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     <button
                       type="button"
                       onClick={() => void logout()}
-                      className="text-xs text-[#98989F] hover:text-[#F7F7F5] underline"
+                      className="text-xs text-[#98989F] hover:text-[#F7F7F5] underline min-h-[44px] px-2"
                     >
                       Sair
                     </button>
@@ -377,7 +440,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                       setMobileMenuOpen(false);
                       openAuthModal('Entre com sua conta Google para salvar favoritos e enviar eventos.');
                     }}
-                    className="w-full py-2.5 rounded-xl border border-[#28282E] bg-[#101012] text-[#F7F7F5] text-xs font-bold"
+                    className="w-full py-3 min-h-[44px] rounded-xl border border-[#28282E] bg-[#101012] hover:border-[#F7F7F5]/40 text-[#F7F7F5] text-xs font-bold transition-colors"
                   >
                     Entrar com Google
                   </button>
@@ -387,7 +450,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               {isAdmin && (
                 <Link
                   to="/admin"
-                  className="block px-3.5 py-2.5 rounded-xl bg-[#101012] border border-[#FF5A36]/50 text-xs font-bold text-[#F7F7F5]"
+                  onClick={scrollToTopInstant}
+                  className="block px-3.5 py-3 rounded-xl bg-[#101012] border border-[#FF5A36]/50 text-xs font-bold text-[#F7F7F5]"
                 >
                   Painel Administrativo
                 </Link>
@@ -402,68 +466,118 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         {/* Mobile Bottom Navigation */}
         <nav
           aria-label="Navegação rápida mobile"
-          className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#101012]/95 backdrop-blur-md border-t border-[#28282E] grid grid-cols-5 h-14 pb-[env(safe-area-inset-bottom)]"
+          className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#101012]/96 backdrop-blur-lg border-t border-[#28282E] grid grid-cols-5 h-14 pb-[env(safe-area-inset-bottom)]"
         >
           <NavLink
             to="/"
             end
             onClick={scrollToTopInstant}
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide transition-colors ${
+              `relative flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide transition-colors ${
                 isActive ? 'text-[#FF5A36]' : 'text-[#98989F]'
               }`
             }
           >
-            <Home className="w-4 h-4" />
-            <span>Início</span>
+            {({ isActive }) => (
+              <>
+                {isActive && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute top-0 w-7 h-0.5 rounded-full bg-[#FF5A36]"
+                  />
+                )}
+                <Home className="w-[18px] h-[18px]" />
+                <span>Início</span>
+              </>
+            )}
           </NavLink>
           <NavLink
             to="/eventos"
             onClick={scrollToTopInstant}
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide transition-colors ${
+              `relative flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide transition-colors ${
                 isActive ? 'text-[#FF5A36]' : 'text-[#98989F]'
               }`
             }
           >
-            <Calendar className="w-4 h-4" />
-            <span>Eventos</span>
+            {({ isActive }) => (
+              <>
+                {isActive && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute top-0 w-7 h-0.5 rounded-full bg-[#FF5A36]"
+                  />
+                )}
+                <Calendar className="w-[18px] h-[18px]" />
+                <span>Eventos</span>
+              </>
+            )}
           </NavLink>
           <NavLink
             to="/bares"
             onClick={scrollToTopInstant}
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide transition-colors ${
+              `relative flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide transition-colors ${
                 isActive ? 'text-[#FF5A36]' : 'text-[#98989F]'
               }`
             }
           >
-            <Wine className="w-4 h-4" />
-            <span>Bares</span>
+            {({ isActive }) => (
+              <>
+                {isActive && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute top-0 w-7 h-0.5 rounded-full bg-[#FF5A36]"
+                  />
+                )}
+                <Wine className="w-[18px] h-[18px]" />
+                <span>Bares</span>
+              </>
+            )}
           </NavLink>
           <NavLink
             to="/mapa"
             onClick={scrollToTopInstant}
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide transition-colors ${
+              `relative flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide transition-colors ${
                 isActive ? 'text-[#5265FF]' : 'text-[#98989F]'
               }`
             }
           >
-            <MapPin className="w-4 h-4" />
-            <span>Mapa</span>
+            {({ isActive }) => (
+              <>
+                {isActive && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute top-0 w-7 h-0.5 rounded-full bg-[#5265FF]"
+                  />
+                )}
+                <MapPin className="w-[18px] h-[18px]" />
+                <span>Mapa</span>
+              </>
+            )}
           </NavLink>
           <NavLink
             to={user ? '/perfil' : '/favoritos'}
             onClick={scrollToTopInstant}
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide transition-colors ${
+              `relative flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide transition-colors ${
                 isActive ? 'text-[#FF5A36]' : 'text-[#98989F]'
               }`
             }
           >
-            {user ? <UserIcon className="w-4 h-4" /> : <Heart className="w-4 h-4" />}
-            <span>{user ? 'Perfil' : 'Salvos'}</span>
+            {({ isActive }) => (
+              <>
+                {isActive && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute top-0 w-7 h-0.5 rounded-full bg-[#FF5A36]"
+                  />
+                )}
+                {user ? <UserIcon className="w-[18px] h-[18px]" /> : <Heart className="w-[18px] h-[18px]" />}
+                <span>{user ? 'Perfil' : 'Salvos'}</span>
+              </>
+            )}
           </NavLink>
         </nav>
 

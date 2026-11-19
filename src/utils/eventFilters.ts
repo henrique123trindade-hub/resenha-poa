@@ -16,6 +16,7 @@ export interface EventFilterCriteria {
   exactDateISO?: string;
   priceType?: PriceType | 'all';
   onlyFree?: boolean;
+  maxPrice?: number;
   ageRating?: AgeRating | 'all' | 'under18_safe';
   includeCancelled?: boolean;
   includePast?: boolean;
@@ -100,6 +101,15 @@ export function filterAndSortEvents(
 
       if (criteria.onlyFree && ev.priceType !== 'free') {
         return false;
+      }
+
+      if (typeof criteria.maxPrice === 'number' && criteria.maxPrice >= 0) {
+        const withinBudget =
+          ev.priceType === 'free' ||
+          (ev.priceType === 'paid' && typeof ev.priceMin === 'number' && ev.priceMin <= criteria.maxPrice);
+        if (!withinBudget) {
+          return false;
+        }
       }
 
       if (criteria.priceType && criteria.priceType !== 'all' && ev.priceType !== criteria.priceType) {

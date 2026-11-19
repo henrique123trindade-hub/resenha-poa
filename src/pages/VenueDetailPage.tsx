@@ -17,6 +17,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { CAMPAIGN_PHOTOS } from '../data/seedCatalog';
 import { isVenueOpenNow } from '../utils/datePoa';
 import { getNightlifeSrcSet } from '../utils/responsiveImage';
+import { useDocumentHead } from '../utils/seoHead';
 import {
   fetchApprovedVenueReviews,
   submitReport,
@@ -46,6 +47,13 @@ export const VenueDetailPage: React.FC = () => {
   const [reportOpen, setReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState('');
 
+  useDocumentHead({
+    title: venue ? `${venue.name} · ${venue.neighborhood} — ResenhaPOA` : 'Bar não encontrado — ResenhaPOA',
+    description: venue
+      ? `${venue.name} (${venue.category}) em ${venue.neighborhood}, Porto Alegre. ${venue.description.slice(0, 140)}`
+      : 'Guia de bares e espaços culturais em Porto Alegre.',
+  });
+
   useEffect(() => {
     if (!venue) return;
     let active = true;
@@ -65,7 +73,7 @@ export const VenueDetailPage: React.FC = () => {
 
   if (!venue) {
     return (
-      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center space-y-5 text-[#F7F7F5]">
+      <div className="max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 py-20 text-center space-y-5 text-[#F7F7F5]">
         <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#98989F]">
           Local não localizado
         </p>
@@ -170,7 +178,7 @@ export const VenueDetailPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 text-[#F7F7F5]">
+    <div className="max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 py-8 sm:py-12 text-[#F7F7F5]">
       <Link
         to="/bares"
         className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#98989F] hover:text-[#F7F7F5] mb-6 transition-colors"
@@ -210,7 +218,8 @@ export const VenueDetailPage: React.FC = () => {
                   {venue.category}
                 </span>
                 {openNow === true && (
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-[#D5FF52] text-[#101012]">
+                  <span className="text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#101012]/85 border border-[#34D399]/50 text-[#34D399] inline-flex items-center gap-1.5">
+                    <span aria-hidden="true" className="w-1.5 h-1.5 rounded-full bg-[#34D399]" />
                     Aberto agora
                   </span>
                 )}
@@ -225,8 +234,8 @@ export const VenueDetailPage: React.FC = () => {
                 {openNow !== null && (
                   <>
                     <span aria-hidden="true">·</span>
-                    <span className={openNow ? 'text-[#D5FF52] font-bold' : 'text-[#98989F]'}>
-                      {openNow ? '● Aberto agora' : 'Fechado agora'}
+                    <span className={openNow ? 'text-[#34D399] font-semibold' : 'text-[#98989F]'}>
+                      {openNow ? 'Aberto agora' : 'Fechado agora'}
                     </span>
                   </>
                 )}
@@ -431,7 +440,7 @@ export const VenueDetailPage: React.FC = () => {
 
               {venue.musicStyle && (
                 <div className="flex items-start gap-3">
-                  <Music className="w-4 h-4 text-[#D5FF52] shrink-0 mt-1" />
+                  <Music className="w-4 h-4 text-[#FF5A36] shrink-0 mt-1" />
                   <div>
                     <p className="text-[11px] font-bold uppercase tracking-wider text-[#98989F]">
                       Som

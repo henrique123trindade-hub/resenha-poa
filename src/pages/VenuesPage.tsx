@@ -5,6 +5,7 @@ import { useCatalog } from '../contexts/CatalogContext';
 import { VenueCard } from '../components/VenueCard';
 import { SectionKicker } from '../components/BrandMark';
 import { filterVenues } from '../utils/eventFilters';
+import { useDocumentHead } from '../utils/seoHead';
 
 export const VenuesPage: React.FC = () => {
   const { venues, neighborhoods, hasRealVenues } = useCatalog();
@@ -15,6 +16,15 @@ export const VenuesPage: React.FC = () => {
   const environmentType = searchParams.get('ambiente') || 'todos';
   const priceRange = searchParams.get('faixa') || 'todos';
   const category = searchParams.get('categoria') || 'todos';
+
+  useDocumentHead({
+    title:
+      neighborhood !== 'todos'
+        ? `Bares em ${neighborhood} · ResenhaPOA`
+        : 'Bares e Espaços Culturais em Porto Alegre · ResenhaPOA',
+    description:
+      'Guia de bares, pubs, cervejarias e espaços culturais em Porto Alegre filtrados por bairro, ambiente e faixa de gasto.',
+  });
 
   const updateParam = (key: string, value: string | null) => {
     const next = new URLSearchParams(searchParams);
@@ -59,7 +69,7 @@ export const VenuesPage: React.FC = () => {
     category !== 'todos';
 
   return (
-    <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 text-[#F7F7F5]">
+    <div className="max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 py-10 sm:py-14 text-[#F7F7F5]">
       <div className="pb-6 border-b border-[#28282E] mb-8">
         <SectionKicker label="Encontros & balcão · Porto Alegre" tone="on-dark" />
         <h1 className="font-display text-4xl sm:text-5xl font-extrabold italic uppercase tracking-tight">

@@ -5,6 +5,7 @@ import { useCatalog } from '../contexts/CatalogContext';
 import { EventCard } from '../components/EventCard';
 import { SectionKicker } from '../components/BrandMark';
 import { filterAndSortEvents } from '../utils/eventFilters';
+import { useDocumentHead } from '../utils/seoHead';
 import type { AgeRating, EventCategoryId, PriceType, QuickDateFilter } from '../types/resenha';
 
 export const EventsPage: React.FC = () => {
@@ -21,8 +22,21 @@ export const EventsPage: React.FC = () => {
   const neighborhood = searchParams.get('bairro') || 'todos';
   const quickDate = (searchParams.get('data') || 'all') as QuickDateFilter;
   const onlyFree = searchParams.get('gratis') === '1';
+  const maxRaw = searchParams.get('max');
+  const maxPrice = maxRaw && !Number.isNaN(Number(maxRaw)) && Number(maxRaw) >= 0 ? Number(maxRaw) : undefined;
   const ageRating = (searchParams.get('idade') || 'all') as AgeRating | 'all' | 'under18_safe';
   const priceType: PriceType | 'all' = onlyFree ? 'free' : 'all';
+
+  useDocumentHead({
+    title:
+      neighborhood !== 'todos'
+        ? `Eventos em ${neighborhood} · ResenhaPOA`
+        : onlyFree
+          ? 'Rolês gratuitos (0800) em Porto Alegre · ResenhaPOA'
+          : 'Agenda de Eventos e Festas em Porto Alegre · ResenhaPOA',
+    description:
+      'Confira festas, baladas, shows e eventos culturais em Porto Alegre filtrados por bairro, dia, estilo musical e orçamento.',
+  });
 
   const updateParam = (key: string, value: string | null) => {
     const next = new URLSearchParams(searchParams);
@@ -48,10 +62,11 @@ export const EventsPage: React.FC = () => {
         quickDate,
         priceType,
         onlyFree,
+        maxPrice,
         ageRating,
         includeCancelled: true,
       }),
-    [events, queryText, category, neighborhood, quickDate, priceType, onlyFree, ageRating],
+    [events, queryText, category, neighborhood, quickDate, priceType, onlyFree, maxPrice, ageRating],
   );
 
   const handleSmartInterpret = async () => {
@@ -99,10 +114,11 @@ export const EventsPage: React.FC = () => {
     neighborhood !== 'todos' ||
     quickDate !== 'all' ||
     onlyFree ||
+    typeof maxPrice === 'number' ||
     ageRating !== 'all';
 
   return (
-    <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 text-[#F7F7F5]">
+    <div className="max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 py-10 sm:py-14 text-[#F7F7F5]">
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 pb-6 border-b border-[#28282E] mb-8">
         <div>
           <SectionKicker label="Agenda Porto Alegre" tone="on-dark" />
@@ -181,11 +197,23 @@ export const EventsPage: React.FC = () => {
           aria-pressed={onlyFree}
           className={`px-4 py-2 rounded-full border text-xs font-semibold whitespace-nowrap shrink-0 transition-colors ${
             onlyFree
-              ? 'bg-[#D5FF52] border-[#D5FF52] text-[#101012]'
-              : 'bg-[#1C1C20] border-[#28282E] text-[#F7F7F5] hover:border-[#D5FF52]'
+              ? 'bg-[#F7F7F5] border-[#F7F7F5] text-[#101012]'
+              : 'bg-[#1C1C20] border-[#28282E] text-[#F7F7F5] hover:border-[#F7F7F5]'
           }`}
         >
           Grátis (0800)
+        </button>
+        <button
+          type="button"
+          onClick={() => updateParam('max', maxPrice === 40 ? null : '40')}
+          aria-pressed={maxPrice === 40}
+          className={`px-4 py-2 rounded-full border text-xs font-semibold whitespace-nowrap shrink-0 transition-colors ${
+            maxPrice === 40
+              ? 'bg-[#F7F7F5] border-[#F7F7F5] text-[#101012]'
+              : 'bg-[#1C1C20] border-[#28282E] text-[#F7F7F5] hover:border-[#F7F7F5]'
+          }`}
+        >
+          Até R$ 40
         </button>
       </div>
 
@@ -217,7 +245,7 @@ export const EventsPage: React.FC = () => {
           </button>
         </div>
 
-        {aiNote && <p className="text-xs font-medium text-[#D5FF52]">Interpretação aplicada: {aiNote}</p>}
+        {aiNote && <p className="text-xs font-medium text-[#FF5A36]">Interpretação aplicada: {aiNote}</p>}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div>

@@ -1,6 +1,17 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { Check, Copy, Lock, Share2, Unlock, Users, Vote } from 'lucide-react';
+import {
+  ArrowUpRight,
+  Check,
+  Copy,
+  Lock,
+  Search,
+  Share2,
+  Trophy,
+  Unlock,
+  Users,
+  Vote,
+} from 'lucide-react';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { useCatalog } from '../contexts/CatalogContext';
@@ -14,6 +25,12 @@ import {
 } from '../services/firestoreService';
 import type { PollListItem, PollOption, PollVoteItem } from '../types/resenha';
 import { formatEventDatePtBr } from '../utils/datePoa';
+import {
+  buildWhatsAppResultMessage,
+  computePollRanking,
+  filterPollCatalogItems,
+} from '../utils/boraJuntoSummary';
+import { useDocumentHead } from '../utils/seoHead';
 import { SectionKicker } from '../components/BrandMark';
 import { useToast } from '../components/Layout';
 
@@ -46,8 +63,16 @@ export const BoraJuntoPage: React.FC = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [selectedOptions, setSelectedOptions] = useState<PollOption[]>([]);
+  const [catalogQuery, setCatalogQuery] = useState('');
   const [creating, setCreating] = useState(false);
   const [myLists, setMyLists] = useState<PollListItem[]>([]);
+
+  useDocumentHead({
+    title: poll ? `${poll.title} · Bora Junto — ResenhaPOA` : 'Bora Junto · Decida o rolê com a galera — ResenhaPOA',
+    description:
+      poll?.description ||
+      'Monte uma lista com festas e bares de Porto Alegre, compartilhe no WhatsApp e vote com a galera.',
+  });
 
   // Pre-seed from ?add=eventId or ?addVenue=venueId
   useEffect(() => {
@@ -137,10 +162,39 @@ export const BoraJuntoPage: React.FC = () => {
     [votes, currentVoterId],
   );
 
+  const publishedEvents = useMemo(
+    () => events.filter((e) => e.status === 'published'),
+    [events],
+  );
+
+  const filteredCatalogEvents = useMemo(
+    () =>
+      filterPollCatalogItems(
+        publishedEvents,
+        catalogQuery,
+        (ev) => `${ev.title} ${ev.venueName} ${ev.category}`,
+      ),
+    [publishedEvents, catalogQuery],
+  );
+
+  const filteredCatalogVenues = useMemo(
+    () =>
+      filterPollCatalogItems(
+        venues.filter((v) => v.status === 'published'),
+        catalogQuery,
+        (v) => `${v.name} ${v.category} ${v.musicStyle ?? ''}`,
+      ),
+    [venues, catalogQuery],
+  );
+
   const toggleCatalogOption = (opt: PollOption) => {
     setSelectedOptions((prev) => {
-      const exists = prev.some((o) => o.targetId === opt.targetId && o.targetType === opt.targetType);
-      if (exists) return prev.filter((o) => !(o.targetId === opt.targetId && o.targetType === opt.targetType));
+      const exists = prev.some(
+        (o) => o.targetId === opt.targetId && o.targetType === opt.targetType,
+      );
+      if (exists) {
+        return prev.filter((o) => !(o.targetId === opt.targetId && o.targetType === opt.targetType));
+      }
       if (prev.length >= 6) {
         notify('Limite de 6 opções por enquete.');
         return prev;
@@ -230,7 +284,7 @@ export const BoraJuntoPage: React.FC = () => {
   if (listId) {
     if (loadingPoll) {
       return (
-        <div className="max-w-[960px] mx-auto px-4 py-20 text-center text-sm text-[#98989F]">
+        <div className="max-w-[960px] mx-auto px-5 py-20 text-center text-sm text-[#98989F]">
           Carregando enquete Bora Junto...
         </div>
       );
@@ -238,7 +292,7 @@ export const BoraJuntoPage: React.FC = () => {
 
     if (!poll) {
       return (
-        <div className="max-w-[960px] mx-auto px-4 py-20 text-center space-y-4 text-[#F7F7F5]">
+        <div className="max-w-[960px] mx-auto px-5 py-20 text-center space-y-4 text-[#F7F7F5]">
           <h1 className="font-display text-4xl font-extrabold italic uppercase tracking-tight">
             Lista não encontrada
           </h1>
@@ -255,22 +309,38 @@ export const BoraJuntoPage: React.FC = () => {
       );
     }
 
-    const totalVotes = votes.length;
+    const ranking = computePollRanking(poll.options, votes);
+    const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+    const inviteWhatsAppHref = `https://wa.me/?text=${encodeURIComponent(
+      `Bora decidir o rolê em POA! Vota aí na lista "${poll.title}": ${currentUrl}`,
+    )}`;
+    const resultWhatsAppHref = `https://wa.me/?text=${encodeURIComponent(
+      buildWhatsAppResultMessage({
+        title: poll.title,
+        summary: ranking,
+        shareUrl: currentUrl,
+        isOpen: poll.isOpen,
+      }),
+    )}`;
 
     return (
-      <div className="max-w-[960px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-8 text-[#F7F7F5]">
+      <div className="max-w-[960px] mx-auto px-5 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-7 text-[#F7F7F5]">
         <div className="bg-[#1C1C20] border border-[#28282E] rounded-2xl p-6 sm:p-8 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#98989F] inline-flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5 text-[#FF5A36]" /> Bora Junto · Criado por {poll.creatorName}
+              <Users className="w-3.5 h-3.5 text-[#FF5A36]" /> Bora Junto · Criado por{' '}
+              {poll.creatorName}
             </span>
             <span
-              className={`text-[11px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full ${
+              className={`text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full inline-flex items-center gap-1.5 ${
                 poll.isOpen
-                  ? 'bg-[#D5FF52] text-[#101012]'
+                  ? 'bg-[#F7F7F5] text-[#101012]'
                   : 'border border-[#28282E] bg-[#101012] text-[#98989F]'
               }`}
             >
+              {poll.isOpen && (
+                <span aria-hidden="true" className="w-2 h-2 rounded-full bg-[#34D399]" />
+              )}
               {poll.isOpen ? 'Votação aberta' : 'Votação encerrada'}
             </span>
           </div>
@@ -278,31 +348,41 @@ export const BoraJuntoPage: React.FC = () => {
           <h1 className="font-display text-3xl sm:text-5xl font-extrabold italic uppercase tracking-tight">
             {poll.title}
           </h1>
-          {poll.description && <p className="text-sm sm:text-base text-[#98989F]">{poll.description}</p>}
+          {poll.description && (
+            <p className="text-sm sm:text-base text-[#98989F]">{poll.description}</p>
+          )}
 
-          <div className="pt-2 flex flex-wrap gap-3">
+          <div className="pt-2 flex flex-wrap gap-2.5">
             <button
               type="button"
               onClick={copyShareUrl}
-              className="px-5 py-2.5 rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] text-[#101012] text-xs font-extrabold uppercase tracking-wider inline-flex items-center gap-2 transition-colors"
+              className="px-5 py-2.5 min-h-[42px] rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] active:scale-[0.98] text-[#101012] text-xs font-extrabold uppercase tracking-wider inline-flex items-center gap-2 transition-all"
             >
-              <Copy className="w-3.5 h-3.5" /> Copiar link para o grupo
+              <Copy className="w-3.5 h-3.5" /> Copiar link
             </button>
             <a
-              href={`https://wa.me/?text=${encodeURIComponent(
-                `Bora decidir o rolê em POA! Vota aí na lista "${poll.title}": ${window.location.href}`,
-              )}`}
+              href={inviteWhatsAppHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-5 py-2.5 rounded-xl border border-[#28282E] bg-[#101012] hover:border-[#F7F7F5]/60 text-[#F7F7F5] text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 transition-colors"
+              className="px-4 py-2.5 min-h-[42px] rounded-xl border border-[#28282E] bg-[#101012] hover:border-[#F7F7F5]/60 text-[#F7F7F5] text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 transition-colors"
             >
-              <Share2 className="w-3.5 h-3.5" /> Enviar no WhatsApp
+              <Share2 className="w-3.5 h-3.5" /> Convidar no WhatsApp
             </a>
+            {ranking.totalVotes > 0 && (
+              <a
+                href={resultWhatsAppHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2.5 min-h-[42px] rounded-xl bg-[#F7F7F5] hover:bg-[#E8E8E6] text-[#101012] text-xs font-extrabold uppercase tracking-wider inline-flex items-center gap-2 transition-colors"
+              >
+                <Trophy className="w-3.5 h-3.5 text-[#FF5A36]" /> Compartilhar resultado
+              </a>
+            )}
             {user?.uid === poll.creatorId && (
               <button
                 type="button"
                 onClick={handleTogglePollOpen}
-                className="px-5 py-2.5 rounded-xl border border-[#28282E] bg-[#101012] hover:border-[#F7F7F5]/60 text-[#F7F7F5] text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 transition-colors"
+                className="px-4 py-2.5 min-h-[42px] rounded-xl border border-[#28282E] bg-[#101012] hover:border-[#F7F7F5]/60 text-[#F7F7F5] text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 transition-colors"
               >
                 {poll.isOpen ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
                 <span>{poll.isOpen ? 'Encerrar votação' : 'Reabrir votação'}</span>
@@ -310,6 +390,51 @@ export const BoraJuntoPage: React.FC = () => {
             )}
           </div>
         </div>
+
+        {/* Leading / Most-Voted Highlight Banner */}
+        {ranking.totalVotes > 0 && ranking.leaders.length > 0 && (
+          <div className="rounded-2xl bg-[#1C1C20] border border-[#FF5A36]/50 p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#FF5A36] inline-flex items-center gap-1.5">
+                <Trophy className="w-3.5 h-3.5" />
+                {ranking.isTie
+                  ? 'Empate na liderança'
+                  : poll.isOpen
+                    ? 'Mais votado pela galera até agora'
+                    : 'Rolê vencedor da votação'}
+              </p>
+              {ranking.isTie ? (
+                <p className="font-display text-2xl sm:text-3xl font-extrabold italic uppercase text-[#F7F7F5]">
+                  {ranking.leaders.map((l) => l.option.title).join(' × ')}
+                </p>
+              ) : (
+                <p className="font-display text-2xl sm:text-3xl font-extrabold italic uppercase text-[#F7F7F5]">
+                  {ranking.leaders[0].option.title}
+                </p>
+              )}
+              <p className="text-xs text-[#98989F] tabular-nums">
+                {ranking.leaders[0].voteCount}{' '}
+                {ranking.leaders[0].voteCount === 1 ? 'voto' : 'votos'} (
+                {ranking.leaders[0].percentage}% de {ranking.totalVotes})
+                {!ranking.isTie ? ` · ${ranking.leaders[0].option.neighborhood}` : ''}
+              </p>
+            </div>
+
+            {!ranking.isTie && (
+              <Link
+                to={
+                  ranking.leaders[0].option.targetType === 'event'
+                    ? `/eventos/${ranking.leaders[0].option.slug}`
+                    : `/bares/${ranking.leaders[0].option.slug}`
+                }
+                className="px-4 py-2.5 rounded-xl bg-[#F7F7F5] hover:bg-[#FF5A36] text-[#101012] text-xs font-extrabold uppercase tracking-wider inline-flex items-center justify-center gap-1.5 shrink-0 transition-colors"
+              >
+                <span>Ver detalhes</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </Link>
+            )}
+          </div>
+        )}
 
         {!user && poll.isOpen && (
           <div className="bg-[#1C1C20] border border-[#28282E] rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3">
@@ -333,31 +458,41 @@ export const BoraJuntoPage: React.FC = () => {
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#98989F]">
             <span className="font-medium tabular-nums text-[#F7F7F5]">
-              {totalVotes} {totalVotes === 1 ? 'voto registrado' : 'votos registrados'}
+              {ranking.totalVotes}{' '}
+              {ranking.totalVotes === 1 ? 'voto registrado' : 'votos registrados'}
             </span>
             <span>Cada participante conta 1 voto (pode trocar enquanto aberta)</span>
           </div>
 
-          {poll.options.map((opt) => {
-            const optVotes = votes.filter((v) => v.optionId === opt.id);
-            const pct = totalVotes > 0 ? Math.round((optVotes.length / totalVotes) * 100) : 0;
+          {ranking.ranked.map(({ option: opt, votes: optVotes, percentage: pct, isLeader }) => {
             const isMine = myCurrentVote?.optionId === opt.id;
 
             return (
               <div
                 key={opt.id}
                 className={`bg-[#1C1C20] border rounded-2xl p-5 sm:p-6 space-y-3 transition-colors ${
-                  isMine ? 'border-[#FF5A36]' : 'border-[#28282E]'
+                  isMine
+                    ? 'border-[#FF5A36]'
+                    : isLeader
+                      ? 'border-[#F7F7F5]/45'
+                      : 'border-[#28282E]'
                 }`}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-[#98989F]">
-                      {opt.targetType === 'event' ? 'Evento' : 'Bar'} · {opt.neighborhood}
-                    </p>
+                    <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-[#98989F]">
+                      <span>
+                        {opt.targetType === 'event' ? 'Evento' : 'Bar'} · {opt.neighborhood}
+                      </span>
+                      {isLeader && (
+                        <span className="px-2 py-0.5 rounded bg-[#F7F7F5] text-[#101012] text-[10px]">
+                          {ranking.isTie ? 'Empatado na liderança' : 'Na liderança'}
+                        </span>
+                      )}
+                    </div>
                     <Link
                       to={opt.targetType === 'event' ? `/eventos/${opt.slug}` : `/bares/${opt.slug}`}
-                      className="font-display text-2xl font-extrabold italic uppercase text-[#F7F7F5] hover:text-[#FF5A36] transition-colors"
+                      className="font-display text-2xl font-extrabold italic uppercase text-[#F7F7F5] hover:text-[#FF5A36] transition-colors inline-block mt-0.5"
                     >
                       {opt.title}
                     </Link>
@@ -368,7 +503,7 @@ export const BoraJuntoPage: React.FC = () => {
                     type="button"
                     disabled={!poll.isOpen || votingBusy}
                     onClick={() => handleCastVote(opt.id)}
-                    className={`px-5 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider inline-flex items-center gap-2 shrink-0 transition-colors ${
+                    className={`px-5 py-2.5 min-h-[42px] rounded-xl text-xs font-extrabold uppercase tracking-wider inline-flex items-center justify-center gap-2 shrink-0 transition-all active:scale-[0.97] ${
                       isMine
                         ? 'bg-[#FF5A36] text-[#101012]'
                         : 'bg-[#101012] border border-[#28282E] hover:border-[#F7F7F5]/60 text-[#F7F7F5]'
@@ -383,8 +518,8 @@ export const BoraJuntoPage: React.FC = () => {
                 <div className="space-y-1.5">
                   <div className="h-2.5 rounded-full bg-[#101012] overflow-hidden border border-[#28282E]">
                     <div
-                      className={`h-full transition-all duration-300 rounded-full ${
-                        isMine ? 'bg-[#FF5A36]' : 'bg-[#D5FF52]'
+                      className={`h-full motion-safe:transition-all motion-safe:duration-300 rounded-full ${
+                        isMine ? 'bg-[#FF5A36]' : isLeader ? 'bg-[#F7F7F5]' : 'bg-[#5265FF]'
                       }`}
                       style={{ width: `${pct}%` }}
                     />
@@ -408,14 +543,14 @@ export const BoraJuntoPage: React.FC = () => {
 
   // --- Create New Bora Junto Poll View ---
   return (
-    <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-10 text-[#F7F7F5]">
+    <div className="max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-10 text-[#F7F7F5]">
       <div className="pb-6 border-b border-[#28282E]">
         <SectionKicker label="Decisão em grupo · Sem burocracia" className="mb-2" />
         <h1 className="font-display text-4xl sm:text-5xl font-extrabold italic uppercase tracking-tight">
           Bora Junto
         </h1>
         <p className="text-sm sm:text-base text-[#98989F] mt-2 max-w-2xl">
-          Monte uma lista com opções de rolês e bares de Porto Alegre e mande o link para o grupo.
+          Monte uma lista com opções de rolês e bares de Porto Alegre e mande o link no WhatsApp.
           Seus amigos votam direto pelo link, sem precisar criar conta.
         </p>
       </div>
@@ -423,7 +558,7 @@ export const BoraJuntoPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <form
           onSubmit={handleCreatePoll}
-          className="lg:col-span-5 bg-[#1C1C20] border border-[#28282E] rounded-2xl p-6 space-y-5 h-fit"
+          className="lg:col-span-5 bg-[#1C1C20] border border-[#28282E] rounded-2xl p-6 space-y-5 h-fit lg:sticky lg:top-24"
         >
           <h2 className="font-display text-2xl font-extrabold italic uppercase text-[#F7F7F5]">
             Nova lista de votação
@@ -495,7 +630,7 @@ export const BoraJuntoPage: React.FC = () => {
           <button
             type="submit"
             disabled={creating}
-            className="w-full py-3.5 rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] disabled:opacity-60 text-[#101012] font-extrabold uppercase tracking-wider text-xs transition-colors"
+            className="w-full py-3.5 rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] active:scale-[0.98] disabled:opacity-60 text-[#101012] font-extrabold uppercase tracking-wider text-xs transition-all"
           >
             {creating
               ? 'Criando lista...'
@@ -522,17 +657,31 @@ export const BoraJuntoPage: React.FC = () => {
           )}
         </form>
 
-        {/* Selector Grid */}
+        {/* Selector Grid with Real-Time Catalog Filter */}
         <div className="lg:col-span-7 space-y-6">
+          <div className="relative">
+            <Search className="w-4 h-4 text-[#98989F] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="search"
+              value={catalogQuery}
+              onChange={(e) => setCatalogQuery(e.target.value)}
+              placeholder="Filtrar eventos ou bares por nome, estilo ou bairro..."
+              aria-label="Filtrar catálogo para enquete Bora Junto"
+              className="w-full h-11 pl-10 pr-4 bg-[#1C1C20] border border-[#28282E] focus:border-[#FF5A36] focus:ring-2 focus:ring-[#FF5A36]/30 rounded-xl text-sm text-[#F7F7F5] placeholder:text-[#98989F] focus:outline-none focus-visible:outline-none transition-shadow"
+            />
+          </div>
+
           <div>
             <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-[#98989F] mb-3">
-              Eventos do catálogo
+              Eventos do catálogo ({filteredCatalogEvents.length})
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {events
-                .filter((e) => e.status === 'published')
-                .slice(0, 8)
-                .map((ev) => {
+            {filteredCatalogEvents.length === 0 ? (
+              <p className="text-xs text-[#98989F] p-4 rounded-xl bg-[#1C1C20] border border-[#28282E]">
+                Nenhum evento encontrado para "{catalogQuery}".
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {filteredCatalogEvents.slice(0, 12).map((ev) => {
                   const isSelected = selectedOptions.some(
                     (o) => o.targetType === 'event' && o.targetId === ev.id,
                   );
@@ -551,7 +700,7 @@ export const BoraJuntoPage: React.FC = () => {
                           slug: ev.slug,
                         })
                       }
-                      className={`p-4 rounded-2xl text-left border transition-colors ${
+                      className={`p-4 rounded-2xl text-left border transition-all active:scale-[0.98] ${
                         isSelected
                           ? 'bg-[#FF5A36]/15 border-[#FF5A36] text-[#F7F7F5]'
                           : 'bg-[#1C1C20] border-[#28282E] hover:border-[#F7F7F5]/50 text-[#F7F7F5]'
@@ -566,59 +715,66 @@ export const BoraJuntoPage: React.FC = () => {
                       <p className="font-display font-bold uppercase text-lg line-clamp-1">
                         {ev.title}
                       </p>
-                      <p className="text-xs mt-1 text-[#98989F]">
+                      <p className="text-xs mt-1 text-[#98989F] tabular-nums">
                         {formatEventDatePtBr(ev.dateISO)} · {ev.startTime}
                       </p>
                     </button>
                   );
                 })}
-            </div>
+              </div>
+            )}
           </div>
 
           <div>
             <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-[#98989F] mb-3">
-              Bares e pontos de encontro
+              Bares e pontos de encontro ({filteredCatalogVenues.length})
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {venues.slice(0, 6).map((v) => {
-                const isSelected = selectedOptions.some(
-                  (o) => o.targetType === 'venue' && o.targetId === v.id,
-                );
-                return (
-                  <button
-                    key={v.id}
-                    type="button"
-                    onClick={() =>
-                      toggleCatalogOption({
-                        id: `opt-${v.id}`,
-                        targetType: 'venue',
-                        targetId: v.id,
-                        title: v.name,
-                        subtitle: `${v.category} · ${v.address}`,
-                        neighborhood: v.neighborhood,
-                        slug: v.slug,
-                      })
-                    }
-                    className={`p-4 rounded-2xl text-left border transition-colors ${
-                      isSelected
-                        ? 'bg-[#5265FF]/15 border-[#5265FF] text-[#F7F7F5]'
-                        : 'bg-[#1C1C20] border-[#28282E] hover:border-[#F7F7F5]/50 text-[#F7F7F5]'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider mb-1">
-                      <span className="text-[#98989F]">{v.neighborhood}</span>
-                      <span className={isSelected ? 'text-[#5265FF]' : 'text-[#F7F7F5]'}>
-                        {isSelected ? 'Selecionado ✓' : '+ Adicionar'}
-                      </span>
-                    </div>
-                    <p className="font-display font-bold uppercase text-lg line-clamp-1">
-                      {v.name}
-                    </p>
-                    <p className="text-xs mt-1 text-[#98989F]">{v.category}</p>
-                  </button>
-                );
-              })}
-            </div>
+            {filteredCatalogVenues.length === 0 ? (
+              <p className="text-xs text-[#98989F] p-4 rounded-xl bg-[#1C1C20] border border-[#28282E]">
+                Nenhum bar encontrado para "{catalogQuery}".
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {filteredCatalogVenues.slice(0, 12).map((v) => {
+                  const isSelected = selectedOptions.some(
+                    (o) => o.targetType === 'venue' && o.targetId === v.id,
+                  );
+                  return (
+                    <button
+                      key={v.id}
+                      type="button"
+                      onClick={() =>
+                        toggleCatalogOption({
+                          id: `opt-${v.id}`,
+                          targetType: 'venue',
+                          targetId: v.id,
+                          title: v.name,
+                          subtitle: `${v.category} · ${v.address}`,
+                          neighborhood: v.neighborhood,
+                          slug: v.slug,
+                        })
+                      }
+                      className={`p-4 rounded-2xl text-left border transition-all active:scale-[0.98] ${
+                        isSelected
+                          ? 'bg-[#5265FF]/15 border-[#5265FF] text-[#F7F7F5]'
+                          : 'bg-[#1C1C20] border-[#28282E] hover:border-[#F7F7F5]/50 text-[#F7F7F5]'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider mb-1">
+                        <span className="text-[#98989F]">{v.neighborhood}</span>
+                        <span className={isSelected ? 'text-[#5265FF]' : 'text-[#F7F7F5]'}>
+                          {isSelected ? 'Selecionado ✓' : '+ Adicionar'}
+                        </span>
+                      </div>
+                      <p className="font-display font-bold uppercase text-lg line-clamp-1">
+                        {v.name}
+                      </p>
+                      <p className="text-xs mt-1 text-[#98989F]">{v.category}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>

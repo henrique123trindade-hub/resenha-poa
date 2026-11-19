@@ -299,7 +299,7 @@ export const AiCuratorPanel: React.FC = () => {
 
       {mode === 'roteiro' && roteiroResult && (
         <div className="mt-6 pt-6 border-t border-[#28282E]">
-          <p className="font-label text-xs font-bold uppercase tracking-wider text-[#D5FF52] mb-2">
+          <p className="font-label text-xs font-bold uppercase tracking-wider text-[#FF5A36] mb-2">
             Roteiro sugerido (respeitando classificação etária)
           </p>
           <div className="text-sm text-[#F7F7F5] whitespace-pre-line leading-relaxed">
