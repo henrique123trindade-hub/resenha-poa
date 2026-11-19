@@ -19,6 +19,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { BrandWordmark } from './BrandMark';
 import { scrollToTopInstant } from '../utils/scrollNavigation';
+import { formatFirebaseAuthError } from '../utils/authError';
 
 interface ToastContextValue {
   notify: (msg: string) => void;
@@ -70,6 +71,12 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   }, []);
 
   useEffect(() => {
+    if (!authModalOpen) {
+      setAuthError(null);
+    }
+  }, [authModalOpen]);
+
+  useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
       if (exploreRef.current && !exploreRef.current.contains(e.target as Node)) {
         setExploreOpen(false);
@@ -80,6 +87,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         setExploreOpen(false);
         setSearchOpen(false);
         setMobileMenuOpen(false);
+        closeAuthModal();
       }
     };
     document.addEventListener('mousedown', onDocClick);
@@ -88,7 +96,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       document.removeEventListener('mousedown', onDocClick);
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, []);
+  }, [closeAuthModal]);
 
   const notify = useCallback((msg: string) => {
     setToastMsg(msg);
@@ -113,7 +121,10 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       notify('Sessão iniciada com sucesso.');
     } catch (err) {
       setAuthError(
-        err instanceof Error ? err.message : 'Não foi possível entrar com o Google.',
+        formatFirebaseAuthError(
+          err,
+          typeof window !== 'undefined' ? window.location.hostname : '',
+        ),
       );
     } finally {
       setAuthLoading(false);
@@ -697,6 +708,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             role="dialog"
             aria-modal="true"
             aria-labelledby="auth-modal-title"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) closeAuthModal();
+            }}
             className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4"
           >
             <div className="max-w-md w-full bg-[#1C1C20] text-[#F7F7F5] border border-[#28282E] rounded-2xl p-6 sm:p-8 relative shadow-2xl">
