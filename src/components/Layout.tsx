@@ -18,8 +18,9 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { BrandWordmark } from './BrandMark';
+import { AuthModal } from './AuthModal';
 import { scrollToTopInstant } from '../utils/scrollNavigation';
-import { formatFirebaseAuthError } from '../utils/authError';
+import { getDisplayInitials } from '../utils/authValidation';
 
 interface ToastContextValue {
   notify: (msg: string) => void;
@@ -34,13 +35,11 @@ export function useToast() {
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const {
     user,
+    profile,
     isAdmin,
     favorites,
-    authModalOpen,
-    authPromptReason,
     openAuthModal,
     closeAuthModal,
-    loginWithGoogle,
     logout,
   } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -49,8 +48,6 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const [headerScrolled, setHeaderScrolled] = useState(false);
   const [quickQuery, setQuickQuery] = useState('');
   const [toastMsg, setToastMsg] = useState<string | null>(null);
-  const [authLoading, setAuthLoading] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
   const [mobileInputFocused, setMobileInputFocused] = useState(false);
 
   const exploreRef = useRef<HTMLDivElement | null>(null);
@@ -104,12 +101,6 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   }, []);
 
   useEffect(() => {
-    if (!authModalOpen) {
-      setAuthError(null);
-    }
-  }, [authModalOpen]);
-
-  useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
       if (exploreRef.current && !exploreRef.current.contains(e.target as Node)) {
         setExploreOpen(false);
@@ -146,23 +137,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     navigate(q ? `/eventos?q=${encodeURIComponent(q)}` : '/eventos');
   };
 
-  const handleGoogleSignIn = async () => {
-    setAuthLoading(true);
-    setAuthError(null);
-    try {
-      await loginWithGoogle();
-      notify('Sessão iniciada com sucesso.');
-    } catch (err) {
-      setAuthError(
-        formatFirebaseAuthError(
-          err,
-          typeof window !== 'undefined' ? window.location.hostname : '',
-        ),
-      );
-    } finally {
-      setAuthLoading(false);
-    }
-  };
+  const resolvedAccountName = profile?.displayName || user?.displayName || user?.email || 'Conta';
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `relative text-sm font-medium whitespace-nowrap shrink-0 transition-colors py-1.5 border-b-2 ${
@@ -334,21 +309,26 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   {user.photoURL ? (
                     <img
                       src={user.photoURL}
-                      alt={user.displayName || 'Conta'}
+                      alt={resolvedAccountName}
                       referrerPolicy="no-referrer"
                       className="w-5 h-5 rounded-full object-cover"
                     />
                   ) : (
-                    <UserIcon className="w-4 h-4" />
+                    <span
+                      aria-hidden="true"
+                      className="w-5 h-5 rounded-full bg-[#FF5A36] text-[#101012] text-[10px] font-extrabold inline-flex items-center justify-center shrink-0"
+                    >
+                      {getDisplayInitials(profile?.displayName || user.displayName, user.email)}
+                    </span>
                   )}
-                  <span className="max-w-[76px] truncate">
-                    {(user.displayName || 'Conta').split(' ')[0]}
+                  <span className="max-w-[84px] truncate">
+                    {resolvedAccountName.split(' ')[0]}
                   </span>
                 </Link>
               ) : (
                 <button
                   type="button"
-                  onClick={() => openAuthModal('Entre para salvar rolês e criar listas Bora Junto.')}
+                  onClick={() => openAuthModal('Cria tua conta ou entra pra salvar teus rolês.')}
                   aria-label="Entrar na conta"
                   className="hidden sm:inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#1C1C20] border border-[#28282E] hover:bg-[#25252B] hover:border-[#F7F7F5]/30 text-[#F7F7F5] transition-colors shrink-0"
                 >
@@ -465,15 +445,15 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     <Link
                       to="/perfil"
                       onClick={scrollToTopInstant}
-                      className="text-sm font-medium text-[#F7F7F5] flex items-center gap-2 min-h-[44px]"
+                      className="text-sm font-medium text-[#F7F7F5] flex items-center gap-2 min-h-[44px] min-w-0"
                     >
-                      <UserIcon className="w-4 h-4 text-[#98989F]" />
-                      {user.displayName || user.email}
+                      <UserIcon className="w-4 h-4 text-[#98989F] shrink-0" />
+                      <span className="truncate">{resolvedAccountName}</span>
                     </Link>
                     <button
                       type="button"
                       onClick={() => void logout()}
-                      className="text-xs text-[#98989F] hover:text-[#F7F7F5] underline min-h-[44px] px-2"
+                      className="text-xs text-[#98989F] hover:text-[#F7F7F5] underline min-h-[44px] px-2 shrink-0"
                     >
                       Sair
                     </button>
@@ -483,11 +463,11 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     type="button"
                     onClick={() => {
                       setMobileMenuOpen(false);
-                      openAuthModal('Entre com sua conta Google para salvar favoritos e enviar eventos.');
+                      openAuthModal('Cria tua conta ou entra pra salvar teus rolês.');
                     }}
                     className="w-full py-3 min-h-[44px] rounded-xl border border-[#28282E] bg-[#101012] hover:border-[#F7F7F5]/40 text-[#F7F7F5] text-xs font-bold transition-colors"
                   >
-                    Entrar com Google
+                    Entrar ou criar conta
                   </button>
                 )}
               </div>
@@ -740,62 +720,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         </footer>
 
         {/* Auth Modal */}
-        {authModalOpen && (
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="auth-modal-title"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) closeAuthModal();
-            }}
-            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]"
-          >
-            <div className="max-w-md w-full max-h-[90dvh] overflow-y-auto bg-[#1C1C20] text-[#F7F7F5] border border-[#28282E] rounded-2xl p-6 sm:p-8 relative shadow-2xl">
-              <button
-                type="button"
-                onClick={closeAuthModal}
-                aria-label="Fechar janela de login"
-                className="absolute right-4 top-4 w-9 h-9 rounded-full flex items-center justify-center border border-[#28282E] hover:border-[#F7F7F5] text-[#98989F] hover:text-[#F7F7F5] transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-
-              <p className="font-label text-[11px] font-bold uppercase tracking-[0.14em] text-[#FF5A36] mb-2">
-                Conta ResenhaPOA
-              </p>
-              <h2
-                id="auth-modal-title"
-                className="font-display text-3xl font-extrabold italic uppercase tracking-tight mb-3"
-              >
-                Entre com sua conta Google
-              </h2>
-              <p className="text-sm text-[#98989F] leading-relaxed mb-6">
-                {authPromptReason ||
-                  'A navegação é livre. Entre apenas para salvar favoritos, criar enquetes Bora Junto ou divulgar eventos.'}
-              </p>
-
-              {authError && (
-                <div className="mb-4 p-3 rounded-xl border border-[#FF5A36]/50 bg-[#101012] text-xs text-[#F7F7F5]">
-                  {authError}
-                </div>
-              )}
-
-              <button
-                type="button"
-                disabled={authLoading}
-                onClick={handleGoogleSignIn}
-                className="w-full py-3.5 px-5 bg-[#FF5A36] hover:bg-[#FF6F4F] disabled:opacity-60 text-[#101012] font-bold text-xs uppercase tracking-wider rounded-xl transition-colors"
-              >
-                {authLoading ? 'Conectando...' : 'Continuar com Google'}
-              </button>
-
-              <p className="mt-4 text-xs text-[#98989F] leading-relaxed">
-                Seus dados seguem a LGPD e servem apenas para manter seus rolês salvos, listas e
-                publicações.
-              </p>
-            </div>
-          </div>
-        )}
+        <AuthModal onNotify={notify} />
 
         {/* Toast Notification */}
         {toastMsg && (

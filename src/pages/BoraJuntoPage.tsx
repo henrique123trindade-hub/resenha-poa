@@ -35,6 +35,7 @@ import {
   validateParticipantName,
   validatePollTitle,
 } from '../utils/boraJuntoForm';
+import { resolveBoraJuntoInitialName } from '../utils/authValidation';
 import { useDocumentHead } from '../utils/seoHead';
 import { SectionKicker } from '../components/BrandMark';
 import { ResenhaInput } from '../components/FormField';
@@ -67,7 +68,7 @@ export const BoraJuntoPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { events, venues } = useCatalog();
-  const { user, openAuthModal } = useAuth();
+  const { user, profile, requireVerifiedAccount } = useAuth();
   const { notify } = useToast();
 
   // Mode 1: Viewing & Voting on an existing shared list
@@ -78,6 +79,7 @@ export const BoraJuntoPage: React.FC = () => {
   const [voterNameError, setVoterNameError] = useState<string | null>(null);
   const [votingBusy, setVotingBusy] = useState(false);
   const voterNameInputRef = useRef<HTMLInputElement | null>(null);
+  const voterNameEditedRef = useRef(false);
 
   // Mode 2: Creating a new list
   const [title, setTitle] = useState('');
@@ -175,6 +177,10 @@ export const BoraJuntoPage: React.FC = () => {
     };
   }, [listId]);
 
+  useEffect(() => {
+    voterNameEditedRef.current = false;
+  }, [listId, user?.uid]);
+
   const currentVoterId = useMemo(
     () => (user ? `uid_${user.uid}` : getOrCreateGuestVoterId()),
     [user],
@@ -184,6 +190,20 @@ export const BoraJuntoPage: React.FC = () => {
     () => votes.find((v) => v.voterId === currentVoterId),
     [votes, currentVoterId],
   );
+
+  // Suggest profile name for signed-in users without ever overwriting an existing group vote name or manual edits
+  useEffect(() => {
+    if (!listId || voterNameEditedRef.current) return;
+    const suggested = resolveBoraJuntoInitialName({
+      existingVoteLabel: myCurrentVote?.voterLabel,
+      profileName: profile?.displayName,
+      userDisplayName: user?.displayName,
+      savedGuestName: getSavedGuestVoterName(),
+      isSignedIn: Boolean(user),
+      maxLength: BORA_JUNTO_LIMITS.PARTICIPANT_NAME_MAX,
+    });
+    setVoterName(suggested);
+  }, [listId, myCurrentVote?.voterLabel, profile?.displayName, user]);
 
   const publishedEvents = useMemo(
     () => events.filter((e) => e.status === 'published'),
@@ -228,8 +248,12 @@ export const BoraJuntoPage: React.FC = () => {
 
   const handleCreatePoll = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
-      openAuthModal('Entre com sua conta Google para criar e compartilhar uma lista Bora Junto.');
+    if (
+      !requireVerifiedAccount(
+        'Entre ou crie uma conta para criar e compartilhar uma lista Bora Junto.',
+      ) ||
+      !user
+    ) {
       return;
     }
     const titleCheck = validatePollTitle(title);
@@ -249,7 +273,7 @@ export const BoraJuntoPage: React.FC = () => {
         title: titleCheck.normalized,
         description: description.trim().slice(0, BORA_JUNTO_LIMITS.POLL_DESC_MAX),
         creatorId: user.uid,
-        creatorName: user.displayName || 'Organizador do rolê',
+        creatorName: profile?.displayName || user.displayName || 'Organizador do rolê',
         options: selectedOptions,
       });
       notify('Lista Bora Junto criada! Compartilhe o link com o grupo.');
@@ -263,17 +287,16 @@ export const BoraJuntoPage: React.FC = () => {
 
   const handleCastVote = async (optionId: string) => {
     if (!poll || !poll.isOpen) return;
-    let label = user?.displayName?.trim() || '';
+    const nameCheck = validateParticipantName(voterName);
+    if (!nameCheck.valid) {
+      setVoterNameError(nameCheck.error);
+      voterNameInputRef.current?.focus();
+      voterNameInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    setVoterNameError(null);
+    const label = nameCheck.normalized;
     if (!user) {
-      const nameCheck = validateParticipantName(voterName);
-      if (!nameCheck.valid) {
-        setVoterNameError(nameCheck.error);
-        voterNameInputRef.current?.focus();
-        voterNameInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        return;
-      }
-      setVoterNameError(null);
-      label = nameCheck.normalized;
       try {
         localStorage.setItem(GUEST_VOTER_NAME_KEY, label);
       } catch {
@@ -285,7 +308,7 @@ export const BoraJuntoPage: React.FC = () => {
       await castPollVote({
         listId: poll.id,
         voterId: currentVoterId,
-        voterLabel: label || 'Convidado(a)',
+        voterLabel: label,
         optionId,
       });
       const updated = await fetchPollVotes(poll.id);
@@ -300,6 +323,7 @@ export const BoraJuntoPage: React.FC = () => {
 
   const handleTogglePollOpen = async () => {
     if (!poll || !user || poll.creatorId !== user.uid) return;
+    if (!requireVerifiedAccount('Confirme seu e-mail para alterar o status desta votação.')) return;
     const path = `pollLists/${poll.id}`;
     try {
       await updateDoc(doc(db, 'pollLists', poll.id), {
@@ -478,7 +502,7 @@ export const BoraJuntoPage: React.FC = () => {
           </div>
         )}
 
-        {!user && poll.isOpen && (
+        {poll.isOpen && (
           <section
             aria-label="Identificação para votar"
             className="bg-[#1C1C20] border border-[#28282E] rounded-2xl p-5 sm:p-6"
@@ -489,7 +513,11 @@ export const BoraJuntoPage: React.FC = () => {
               type="text"
               label="Como podemos te chamar?"
               placeholder="Digite seu nome"
-              helperText="Esse nome aparece para a galera do grupo."
+              helperText={
+                user
+                  ? 'Sugerimos o nome da sua conta — você pode editar como aparece neste grupo.'
+                  : 'Esse nome aparece para a galera do grupo.'
+              }
               value={voterName}
               error={voterNameError}
               maxLength={BORA_JUNTO_LIMITS.PARTICIPANT_NAME_MAX}
@@ -501,14 +529,17 @@ export const BoraJuntoPage: React.FC = () => {
               enterKeyHint="done"
               onChange={(e) => {
                 const next = e.target.value;
+                voterNameEditedRef.current = true;
                 setVoterName(next);
                 if (voterNameError && validateParticipantName(next).valid) {
                   setVoterNameError(null);
                 }
-                try {
-                  localStorage.setItem(GUEST_VOTER_NAME_KEY, next);
-                } catch {
-                  // Ignore storage errors in private mode
+                if (!user) {
+                  try {
+                    localStorage.setItem(GUEST_VOTER_NAME_KEY, next);
+                  } catch {
+                    // Ignore storage errors in private mode
+                  }
                 }
               }}
               onKeyDown={(e) => {

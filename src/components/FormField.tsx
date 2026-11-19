@@ -9,6 +9,7 @@ export interface ResenhaInputProps
   sizeVariant?: 'comfortable' | 'default';
   showCount?: boolean;
   optionalTag?: string;
+  rightSlot?: React.ReactNode;
 }
 
 /**
@@ -27,6 +28,7 @@ export const ResenhaInput = forwardRef<HTMLInputElement, ResenhaInputProps>(
       sizeVariant = 'comfortable',
       showCount = false,
       optionalTag,
+      rightSlot,
       maxLength,
       value,
       className = '',
@@ -66,20 +68,29 @@ export const ResenhaInput = forwardRef<HTMLInputElement, ResenhaInputProps>(
           )}
         </div>
 
-        <input
-          ref={ref}
-          id={id}
-          value={value}
-          maxLength={maxLength}
-          aria-invalid={Boolean(error) || undefined}
-          aria-describedby={describedBy}
-          className={`w-full min-w-0 ${heightClass} px-4 bg-[#101012] border rounded-xl text-base leading-normal text-[#F7F7F5] placeholder:text-[#98989F]/85 transition-colors focus:outline-none focus-visible:outline-none ${
-            error
-              ? 'border-[#FF5A36] ring-2 ring-[#FF5A36]/25'
-              : 'border-[#28282E] hover:border-[#3A3A44] focus:border-[#FF5A36] focus:ring-2 focus:ring-[#FF5A36]/20'
-          } ${className}`}
-          {...rest}
-        />
+        <div className="relative w-full min-w-0">
+          <input
+            ref={ref}
+            id={id}
+            value={value}
+            maxLength={maxLength}
+            aria-invalid={Boolean(error) || undefined}
+            aria-describedby={describedBy}
+            className={`w-full min-w-0 ${heightClass} pl-4 ${
+              rightSlot ? 'pr-12' : 'pr-4'
+            } bg-[#101012] border rounded-xl text-base leading-normal text-[#F7F7F5] placeholder:text-[#98989F]/85 transition-colors focus:outline-none focus-visible:outline-none ${
+              error
+                ? 'border-[#FF5A36] ring-2 ring-[#FF5A36]/25'
+                : 'border-[#28282E] hover:border-[#3A3A44] focus:border-[#FF5A36] focus:ring-2 focus:ring-[#FF5A36]/20'
+            } ${className}`}
+            {...rest}
+          />
+          {rightSlot && (
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
+              {rightSlot}
+            </div>
+          )}
+        </div>
 
         {error ? (
           <p id={errorId} role="alert" className="text-xs font-medium text-[#FF6F4F] leading-snug">

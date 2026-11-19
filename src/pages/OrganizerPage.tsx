@@ -23,7 +23,7 @@ const STATUS_LABEL: Record<EventStatus, string> = {
 };
 
 export const OrganizerPage: React.FC = () => {
-  const { user, organizerProfile, openAuthModal } = useAuth();
+  const { user, profile, organizerProfile, openAuthModal, requireVerifiedAccount } = useAuth();
   const { events, categories, neighborhoods } = useCatalog();
   const { notify } = useToast();
 
@@ -138,8 +138,7 @@ export const OrganizerPage: React.FC = () => {
 
   const handleSaveOrg = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
-      openAuthModal('Entre com sua conta Google para cadastrar seu perfil de organizador.');
+    if (!requireVerifiedAccount('Entre ou crie uma conta para cadastrar seu perfil de organizador.') || !user) {
       return;
     }
     if (orgName.trim().length < 2 || !orgEmail.trim()) {
@@ -168,8 +167,7 @@ export const OrganizerPage: React.FC = () => {
   };
 
   const handleSubmitEvent = async (targetStatus: 'draft' | 'pending') => {
-    if (!user) {
-      openAuthModal('Entre com sua conta Google para enviar um evento.');
+    if (!requireVerifiedAccount('Entre ou crie uma conta para enviar um evento.') || !user) {
       return;
     }
     if (title.trim().length < 3 || !dateISO || !startTime || !venueName.trim() || !address.trim()) {
@@ -220,7 +218,7 @@ export const OrganizerPage: React.FC = () => {
             ageRating,
             ticketUrl,
             description,
-            organizerName: organizerProfile?.orgName || orgName || user.displayName || 'Organizador',
+            organizerName: organizerProfile?.orgName || orgName || profile?.displayName || user.displayName || 'Organizador',
           },
           targetStatus,
         );
@@ -254,7 +252,7 @@ export const OrganizerPage: React.FC = () => {
           isFeatured: false,
           status: targetStatus,
           organizerId: user.uid,
-          organizerName: organizerProfile?.orgName || orgName || user.displayName || 'Organizador',
+          organizerName: organizerProfile?.orgName || orgName || profile?.displayName || user.displayName || 'Organizador',
         });
         notify(
           targetStatus === 'draft'
@@ -291,15 +289,15 @@ export const OrganizerPage: React.FC = () => {
           Divulgue seu evento no ResenhaPOA
         </h1>
         <p className="text-sm sm:text-base text-[#98989F] max-w-lg mx-auto leading-relaxed">
-          Entre com sua conta Google para cadastrar seu perfil de organizador, enviar festas, shows
+          Entre ou crie sua conta para cadastrar seu perfil de organizador, enviar festas, shows
           e eventos culturais em Porto Alegre e acompanhar a moderação antes de ir ao ar.
         </p>
         <button
           type="button"
-          onClick={() => openAuthModal('Entre com Google para divulgar eventos no ResenhaPOA.')}
+          onClick={() => openAuthModal('Entre ou crie sua conta para divulgar eventos no ResenhaPOA.')}
           className="px-6 py-3.5 rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] text-[#101012] text-xs font-extrabold uppercase tracking-wider transition-colors"
         >
-          Entrar com Google
+          Entrar ou criar conta
         </button>
       </div>
     );

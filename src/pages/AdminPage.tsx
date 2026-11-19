@@ -125,7 +125,7 @@ export const AdminPage: React.FC = () => {
           onClick={() => openAuthModal('Entre com a conta administrativa autorizada.')}
           className="px-6 py-3 rounded-xl bg-[#FF5A36] hover:bg-[#FF6F4F] text-[#101012] text-xs font-extrabold uppercase tracking-wider transition-colors"
         >
-          Entrar com Google
+          Entrar na conta
         </button>
       </div>
     );

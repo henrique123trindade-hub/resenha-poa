@@ -22,7 +22,7 @@ export const EventCard: React.FC<EventCardProps> = ({
   surface = 'dark',
   reasonLabel,
 }) => {
-  const { user, isFavorited, openAuthModal } = useAuth();
+  const { user, isFavorited, requireVerifiedAccount } = useAuth();
   const { notify } = useToast();
   const saved = isFavorited('event', event.id);
 
@@ -59,8 +59,7 @@ export const EventCard: React.FC<EventCardProps> = ({
   const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!user) {
-      openAuthModal(`Entre com sua conta Google para salvar "${event.title}" nos seus favoritos.`);
+    if (!requireVerifiedAccount(`Entre ou crie uma conta para salvar "${event.title}" nos seus favoritos.`) || !user) {
       return;
     }
     try {

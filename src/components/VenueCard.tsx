@@ -13,7 +13,7 @@ export const VenueCard: React.FC<{ venue: VenueItem; surface?: 'dark' | 'light' 
   venue,
   surface = 'dark',
 }) => {
-  const { user, isFavorited, openAuthModal } = useAuth();
+  const { user, isFavorited, requireVerifiedAccount } = useAuth();
   const { notify } = useToast();
   const saved = isFavorited('venue', venue.id);
   const openNow = isVenueOpenNow(venue.openingHours, venue.hoursVerified);
@@ -25,8 +25,7 @@ export const VenueCard: React.FC<{ venue: VenueItem; surface?: 'dark' | 'light' 
   const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!user) {
-      openAuthModal(`Entre com sua conta Google para salvar "${venue.name}" nos seus favoritos.`);
+    if (!requireVerifiedAccount(`Entre ou crie uma conta para salvar "${venue.name}" nos seus favoritos.`) || !user) {
       return;
     }
     try {

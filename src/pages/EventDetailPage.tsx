@@ -36,7 +36,7 @@ import { useToast } from '../components/Layout';
 export const EventDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { getEventBySlug, events } = useCatalog();
-  const { user, isFavorited, openAuthModal } = useAuth();
+  const { user, isFavorited, requireVerifiedAccount } = useAuth();
   const { notify } = useToast();
 
   const event = slug ? getEventBySlug(slug) : undefined;
@@ -111,8 +111,7 @@ export const EventDetailPage: React.FC = () => {
   const socialShareLinks = buildSocialShareLinks(sharePayload);
 
   const handleSave = async () => {
-    if (!user) {
-      openAuthModal(`Entre para salvar "${event.title}" na sua lista.`);
+    if (!requireVerifiedAccount(`Entre ou crie uma conta para salvar "${event.title}" na sua lista.`) || !user) {
       return;
     }
     try {
@@ -161,8 +160,7 @@ export const EventDetailPage: React.FC = () => {
 
   const handleReportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
-      openAuthModal('Entre com sua conta Google para enviar um aviso ou denúncia.');
+    if (!requireVerifiedAccount('Entre ou crie uma conta para enviar um aviso ou denúncia.') || !user) {
       return;
     }
     if (reportReason.trim().length < 5) {

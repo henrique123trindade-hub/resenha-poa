@@ -33,7 +33,7 @@ import { useToast } from '../components/Layout';
 export const VenueDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { getVenueBySlug, events } = useCatalog();
-  const { user, isFavorited, openAuthModal } = useAuth();
+  const { user, profile, isFavorited, requireVerifiedAccount } = useAuth();
   const { notify } = useToast();
 
   const venue = slug ? getVenueBySlug(slug) : undefined;
@@ -102,8 +102,7 @@ export const VenueDetailPage: React.FC = () => {
   );
 
   const handleSave = async () => {
-    if (!user) {
-      openAuthModal(`Entre para salvar "${venue.name}" nos seus favoritos.`);
+    if (!requireVerifiedAccount(`Entre ou crie uma conta para salvar "${venue.name}" nos seus favoritos.`) || !user) {
       return;
     }
     try {
@@ -122,8 +121,7 @@ export const VenueDetailPage: React.FC = () => {
 
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
-      openAuthModal('Entre com sua conta Google para enviar sua avaliação sobre este local.');
+    if (!requireVerifiedAccount('Entre ou crie uma conta para enviar sua avaliação sobre este local.') || !user) {
       return;
     }
     if (venue.isDemoExample) {
@@ -139,7 +137,7 @@ export const VenueDetailPage: React.FC = () => {
       await submitVenueReview({
         venueId: venue.id,
         authorId: user.uid,
-        authorName: user.displayName || 'Explorador POA',
+        authorName: profile?.displayName || user.displayName || 'Explorador POA',
         rating,
         comment,
       });
@@ -154,8 +152,7 @@ export const VenueDetailPage: React.FC = () => {
 
   const handleReportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
-      openAuthModal('Entre com sua conta Google para enviar um aviso.');
+    if (!requireVerifiedAccount('Entre ou crie uma conta para enviar um aviso.') || !user) {
       return;
     }
     if (reportReason.trim().length < 5) {
