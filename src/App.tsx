@@ -8,6 +8,7 @@ import { Layout } from './components/Layout';
 import { ScrollToTop } from './components/ScrollToTop';
 import { HomePage } from './pages/HomePage';
 import { scrollToTopInstant } from './utils/scrollNavigation';
+import { installMobileZoomLock } from './utils/mobileZoomLock';
 
 const EventsPage = lazy(() => import('./pages/EventsPage').then((m) => ({ default: m.EventsPage })));
 const EventDetailPage = lazy(() =>
@@ -57,6 +58,10 @@ export default function App() {
     const onQuota = () => setMapsQuotaExceeded(true);
     window.addEventListener('gmp-quota-exceeded', onQuota);
     return () => window.removeEventListener('gmp-quota-exceeded', onQuota);
+  }, []);
+
+  useEffect(() => {
+    return installMobileZoomLock();
   }, []);
 
   return (
